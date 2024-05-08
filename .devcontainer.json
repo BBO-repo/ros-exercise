@@ -11,8 +11,7 @@
 		"-e", "DISPLAY=${env:DISPLAY}",
 		"-e", "QT_X11_NO_MITSHM=1",
 		"-v", "/tmp/.X11-unix:/tmp/.X11-unix",
-		"--privileged",
-		"--gpus", "all"
+		"--privileged"
 	],
 	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
 	"workspaceFolder": "/workspace"
