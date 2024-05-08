@@ -1,0 +1,19 @@
+{
+	"name": "ros-exercise",
+	"build": {
+		"dockerfile": "./Dockerfile",
+		"context": ".",
+		"args": {}
+	},
+	"runArgs": [
+		"--name=ros-exercise",
+		"--net=host",
+		"-e", "DISPLAY=${env:DISPLAY}",
+		"-e", "QT_X11_NO_MITSHM=1",
+		"-v", "/tmp/.X11-unix:/tmp/.X11-unix",
+		"--privileged",
+		"--gpus", "all"
+	],
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+	"workspaceFolder": "/workspace"
+}

@@ -1,0 +1,105 @@
+From 0277acc86eedc6ae2365922f22b183a4a9d947b7 Mon Sep 17 00:00:00 2001
+From: Amin <amin.soufari@gmail.com>
+Date: Wed, 29 Nov 2023 10:39:47 +0100
+Subject: [PATCH] chore: Upgrade to ros-noetic
+
+---
+ CMakeLists.txt    |  2 +-
+ Dockerfile        | 12 ++++++------
+ README.md         |  8 ++++----
+ include/utility.h |  5 +++--
+ 4 files changed, 14 insertions(+), 13 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f96b004..7fea244 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
+ project(lio_sam)
+ 
+ set(CMAKE_BUILD_TYPE "Release")
+-set(CMAKE_CXX_FLAGS "-std=c++11")
++set(CMAKE_CXX_FLAGS "-std=c++14")
+ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g -pthread")
+ 
+ find_package(catkin REQUIRED COMPONENTS
+diff --git a/Dockerfile b/Dockerfile
+index 497b10e..661cf8b 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -1,12 +1,12 @@
+-FROM osrf/ros:kinetic-desktop-full-xenial
++FROM osrf/ros:noetic-desktop-full-focal
+ 
+ RUN apt-get update \
+     && apt-get install -y curl \
+     && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add - \
+     && apt-get update \
+-    && apt-get install -y ros-kinetic-navigation \
+-    && apt-get install -y ros-kinetic-robot-localization \
+-    && apt-get install -y ros-kinetic-robot-state-publisher \
++    && apt-get install -y ros-noetic-navigation \
++    && apt-get install -y ros-noetic-robot-localization \
++    && apt-get install -y ros-noetic-robot-state-publisher \
+     && rm -rf /var/lib/apt/lists/*
+ 
+ RUN apt-get update \
+@@ -22,10 +22,10 @@ RUN mkdir -p ~/catkin_ws/src \
+     && cd ~/catkin_ws/src \
+     && git clone https://github.com/TixiaoShan/LIO-SAM.git \
+     && cd .. \
+-    && source /opt/ros/kinetic/setup.bash \
++    && source /opt/ros/noetic/setup.bash \
+     && catkin_make
+ 
+-RUN echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc \
++RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc \
+     && echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
+ 
+ WORKDIR /root/catkin_ws
+diff --git a/README.md b/README.md
+index 99aff57..1c7d104 100644
+--- a/README.md
++++ b/README.md
+@@ -55,11 +55,11 @@ We design a system that maintains two graphs and runs up to 10x faster than real
+ 
+ This is the original ROS1 implementation of LIO-SAM. For a ROS2 implementation see branch `ros2`.
+ 
+-- [ROS](http://wiki.ros.org/ROS/Installation) (tested with Kinetic and Melodic. Refer to [#206](https://github.com/TixiaoShan/LIO-SAM/issues/206) for Noetic)
++- [ROS](http://wiki.ros.org/ROS/Installation) (tested with Noetic)
+   ```
+-  sudo apt-get install -y ros-kinetic-navigation
+-  sudo apt-get install -y ros-kinetic-robot-localization
+-  sudo apt-get install -y ros-kinetic-robot-state-publisher
++  sudo apt-get install -y ros-noetic-navigation
++  sudo apt-get install -y ros-noetic-robot-localization
++  sudo apt-get install -y ros-noetic-robot-state-publisher
+   ```
+ - [gtsam](https://gtsam.org/get_started/) (Georgia Tech Smoothing and Mapping library)
+   ```
+diff --git a/include/utility.h b/include/utility.h
+index cc3c60f..50bab79 100644
+--- a/include/utility.h
++++ b/include/utility.h
+@@ -15,8 +15,6 @@
+ #include <visualization_msgs/Marker.h>
+ #include <visualization_msgs/MarkerArray.h>
+ 
+-#include <opencv/cv.h>
+-
+ #include <pcl/point_cloud.h>
+ #include <pcl/point_types.h>
+ #include <pcl/search/impl/search.hpp>
+@@ -31,6 +29,9 @@
+ #include <pcl/filters/crop_box.h> 
+ #include <pcl_conversions/pcl_conversions.h>
+ 
++// See flann-lib/flann#214
++#include <opencv2/opencv.hpp>
++
+ #include <tf/LinearMath/Quaternion.h>
+ #include <tf/transform_listener.h>
+ #include <tf/transform_datatypes.h>
+-- 
+2.34.1
+
