@@ -79,4 +79,4 @@ To teleoperate the robot, you just need to launch the simulator launch file and 
 ```
 python3 /workspace/scripts/gem_teleop_keyboard.py
 ```
-![polaris gem teleop](images/gem-gazebo-keyboard-teleop.mp4)
+![polaris gem teleop](images/gem-gazebo-keyboard-teleop.gif)
