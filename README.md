@@ -40,7 +40,7 @@ After that, to confirm the setting was up, I've tried to run `roscore` then `rvi
 ### Install and run the POLARIS GEM e2 simulator
 Installing the [POLARIS GEM e2 simulator](https://gitlab.engr.illinois.edu/gemillins/POLARIS_GEM_e2) was straight forward following the official instruction.<br>
 
-Open a terminal in your container and make your ROS worspace directory `gem_ws`: 
+Open a terminal in your container and make your ROS worspace directory, in our case `gem_ws`: 
 ```
 mkdir -p /workspace/gem_ws/src
 cd /workspace/gem_ws/src
@@ -66,3 +66,17 @@ roslaunch gem_gazebo gem_gazebo_rviz.launch world_name:=/workspace/gem_ws/src/PO
 ```
 The gazebo simulator should be opened with the robot facing the entrance of a warehouse
 ![polaris gem gazebo](images/polaris-gem-gazebo.png)
+
+
+### Teleoperating the POLARIS GEM e2 robot in gazebo
+To determine how to operate the robot, I checked the `rostopic list` while the simulation is running and noticed a `/gem/cmd_vel`.<br>
+Since the `cmd_vel` is usually the topic to operate robot I've tried to publish the single twist message and could see the robot moving
+```
+rostopic pub -l /gem/cmd_vel geometry_msgs/Twist -r 3 -- '[0.5,0,0]' '[0,0,0]'
+```
+Then I decide to develop my own keyboard teleoperating script to allow moving the robot. The written script [scripts/gem_teleop_keyboard.py](scripts/gem_teleop_keyboard.py) takes user keyboard inputs to increase/decrease the linear/angular velocities and publish a `geometry_msgs/Twist` to `/gem/cmd_vel`.<br>
+To teleoperate the robot, you just need to launch the simulator launch file and from another terminal in container run the written script.
+```
+python3 /workspace/scripts/gem_teleop_keyboard.py
+```
+![polaris gem teleop](images/gem-gazebo-keyboard-teleop.mp4)
