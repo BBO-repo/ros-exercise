@@ -143,6 +143,6 @@ To save the map, I just called the `/lio_sam/save_map` service.
 ```
 rosservice call /lio_sam/save_map 0.2 "/workspace/map"
 ```
-The produced map folder contains the following files `CornerMap.pcd`, `GlobalMap.pcd`, `SurfMap.pcd`, `trajectory.pcd`, `transformations.pcd` and is available is the [map](map) repository folder.
+The produced map folder contains the following files `CornerMap.pcd`, `GlobalMap.pcd`, `SurfMap.pcd`, `trajectory.pcd`, `transformations.pcd` and is available in the [map](map) folder.
 Several software can be used to visualize the point cloud map, I've used the [vscode-3d-preview](https://marketplace.visualstudio.com/items?itemName=tatsy.vscode-3d-preview) extension to directly see it in vscode.
 ![lio sam map](images/lio-sam-generated-map.png)
