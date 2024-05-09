@@ -110,11 +110,11 @@ The LIO-SAM package uses a [config/params.yaml](https://github.com/TixiaoShan/LI
 + Extrinsics between lidar and IMU: `extrinsicTrans`,`extrinsicRot`, `extrinsicRPY`
 + Enable map saving to a corresponding folder: `savePCD`, `savePCDDirectory`
 
- To determine which topic to put, I've run the Polaris GEM simulator as described above and execute a `rostopic list`. The relevant topics are `/gem/velodyne_points` for point cloud data and `/gem/imu` for IMU data. Note that in `param.yaml` file `/` prefix is not used.
+ To determine which topic to put, I've run the Polaris GEM simulator as described above and execute a `rostopic list`. The relevant topics are `/gem/velodyne_points` for point cloud data and `/gem/imu` for IMU data. Checking the LIO-SAM code, `odomTopic` is used to publish IMU data after optimisation and `gpsTopic` is used for GPS data. In my case I let those last two topic values as is. 
 
 ![topic param](images/topic-param.png)
 
- The extrinsics between lidar and IMU can be determined by examining the file [polaris_gem_simulator/gem_simulator/gem_description/urdf/gem.urdf.xacro](https://gitlab.engr.illinois.edu/gemillins/POLARIS_GEM_e2/-/blob/main/polaris_gem_simulator/gem_simulator/gem_description/urdf/gem.urdf.xacro?ref_type=heads#L1135). Below a print screen providing relative pose of IMU and lidar related in robot center `center_link`
+ The extrinsics between lidar and IMU can be determined by examining the file [polaris_gem_simulator/gem_simulator/gem_description/urdf/gem.urdf.xacro](https://gitlab.engr.illinois.edu/gemillins/POLARIS_GEM_e2/-/blob/main/polaris_gem_simulator/gem_simulator/gem_description/urdf/gem.urdf.xacro?ref_type=heads#L1135). Below a print screen providing relative pose of IMU and lidar related to robot center `center_link`
  ![lidar link](images/lidar-link.png)
  
  ![IMU link](images/IMU-link.png)
@@ -123,4 +123,17 @@ We can observe that both lidar and IMU have null rotation `rpy="0 0 0"`. This in
 
 ![topic param](images/lidar-imu-tr.png)
 
-We want to save the map so set `savePCD: true` and `savePCDDirectory: "/workspace"`
+To save the map I've just set `savePCD: true` and `savePCDDirectory: "/workspace"`.
+
+From three terminals in container, I can run again the gem simulator, the keyboard teleoperate script and lio-sam with the modified params.yaml
+```
+roslaunch gem_gazebo gem_gazebo_rviz.launch world_name:=/workspace/gem_ws/src/POLARIS_GEM_e2/polaris_gem_simulator/gem_simulator/gem_gazebo/worlds/highbay_track.world x:=-30.5 y:=-1.5 yaw:=0 velodyne_points:="true" use_rviz:="false"
+
+python3 /workspace/scripts/gem_teleop_keyboard.py
+
+roslaunch lio_sam run.launch
+
+```
+This allows to visualize the following results<br>
+Note: The Polaris robot has been moved inside the warehouse.
+![lio sam slam](images/lio-sam-slam.gif)
