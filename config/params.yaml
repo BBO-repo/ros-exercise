@@ -20,7 +20,7 @@ lio_sam:
   
   # Export settings
   savePCD: true                               # https://github.com/TixiaoShan/LIO-SAM/issues/3
-  savePCDDirectory: "/workspace/"             # in your home folder, starts and ends with "/". Warning: the code deletes "LOAM" folder then recreates it. See "mapOptimization" for implementation
+  savePCDDirectory: "/workspace/map/"         # in your home folder, starts and ends with "/". Warning: the code deletes "LOAM" folder then recreates it. See "mapOptimization" for implementation
 
   # Sensor Settings
   sensor: velodyne                            # lidar sensor type, 'velodyne' or 'ouster' or 'livox'
