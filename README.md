@@ -208,9 +208,15 @@ Let's note $\delta_x^n$, respectively $\delta_y^n$, the position uncertainty at 
 $$x_{lo}^n = x_{gt}^n + \delta_x^n$$
 $$y_{lo}^n = y_{gt}^n + \delta_y^n$$
 
-We want an approximative estimation of this odometry localization uncertainty [$\delta_x,\delta_y$]. Supposing that this uncertainty has a null mean value (hypothesis that may not be true in practice), the expected value are null: $E(\delta_x) = E(\delta_y) = 0$. Then the covariance of those uncertainties are:
+We want an approximative estimation of this odometry localization uncertainty [$\delta_x,\delta_y$]. Supposing that this uncertainty has a null mean value (hypothesis that may not be true in practice), the expected values are null: $E(\delta_x) = E(\delta_y) = 0$. Then the covariance of those uncertainties are:
 $$\sigma_{\delta_x}^2 = E(\delta_x - E(\delta_x))^2 = E(\delta_x^2) = E(|x_{lo} - x_{gt}|^2)$$
 $$\sigma_{\delta_y}^2 = E(\delta_y - E(\delta_y))^2 = E(\delta_y^2) = E(|y_{lo} - y_{gt}|^2)$$
-We can see from that relations that the covariance is the square of the pose error reloated to the ground truth.</br>
+We can see from those relations that the covariance is the square of the pose error related to the ground truth.</br>
 
-We now need an estimator of this covariance, this can be done with the sequential/recursive/online calculation of sample covariance  
+We now need an estimator of this covariance. This can be done with the sequential calculation of covariance. Let's note $\hat{\Sigma}_n$ the sample covariance estimator with $n$ samples of a random discrete variable $X$:
+$$\hat{\Sigma}_n=\frac{1}{n-1}\sum_{i=1}^{n}(X_i-\hat{\mu}_n)^2$$
+With $\hat{\mu_n}$ the sample mean estimator:
+$$\hat{\mu}_n = \frac{1}{n}\sum_{i=1}^{n}X_i$$
+We have the following recursion $\hat{\Sigma}_1=0$ and $\hat{\Sigma}_n=\frac{n-1}{n-2}\hat{\Sigma}_{n-1} + \frac{1}{n}(X_n - \hat{\mu}_{n-1}^2)$.<br>
+
+I've used this recursion to compute the covariance. Noting that ground truth and odometry need to be synchronized, I've reused my `odo-sync` package adding the recursion computation in the synchronization callback function.
