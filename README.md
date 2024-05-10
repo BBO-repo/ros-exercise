@@ -167,7 +167,35 @@ You should observe the map directly loaded in RViz with the robot moving inside 
 
 ![lio sam lo](images/lio-sam-lo.gif)
 
-### 7. Modified LIO-SAM localization only to ground truth comparison
+### 7. Ground truth vs LIO-SAM localization only
 The Polaris gem simulator provides the odometry ground truth in topic `/gem/base_footprint/odom` while our localize only LIO-SAM provides odometry in `/lio_sam_lo/mapping/odometry`.<br>
 To compare the LIO-SAM-LO odometry to ground truth, the odometries need to be synchronized in time. So I've written a quick package **odo**metry **sync**hronizer **odo-sync**.<br>
-This odo-sync package takes two odometry topics and performs a soft synchronization within the ROS framework, then writes a file containing synchronized odometry data. The file can then be post-processed to compare odometry result.  
+This odo-sync package performs a soft synchronization of two odometry topics, then writes a file containing synchronized odometry data. The file can then be post-processed to compare odometry result.<br>
+To integrate the pakage, open a terminal in your container and go to the ROS source worspace directory, in our case `gem_ws/src`. Then make a symlink to the odo-sync package and build your workspace
+```
+cd /workspace/gem_ws/src
+ln -s /workspace/package/odo-sync .
+
+cd /workspace/gem_ws
+catkin_make
+```
+I've stored the `data/rosbag/odo-sync-one-minute-record.bag` containing the record of the two topics `/gem/base_footprint/odom` and `/lio_sam_lo/mapping/odometry` from the `one-minute-record.bag`. To get synchronized odometry data, from the container terminal, just run the odo_sync.launch after the previous build.
+```
+source /workspace/gem_ws/devel/setup.bash
+roslaunch /workspace/gem_ws/src/odo-sync/launch/odo_sync.launch
+```
+You should have the file `/workspace/data/odo_sync/odo_sync.txt` containing the synchronized odometries. This file contain timestamp, ground truth position [x,y,z] and localize only LIO-SAM odometry position [x,y,z]. I've made a quick python script [gem_gt_vs_lio_sam_lo.py](scripts/gem_gt_vs_lio_sam_lo.py) to plot the ground truth odometry versus the LIO-SAM-LO one.<br>
+
+Note:<br>
++ To compare odometries, initial robot position have been substrated to ground truth position.
++ Also just for the exercise purpose, initial robot frame and world frame are aligned. Else it would have been required to transform lio-sam odometry to world system coordinate, for that [scipy.spatial.transform.Rotation.align_vectors](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.align_vectors.html) can be used for example to determine the rigid transformation between the two frame.
+
+Run the python script to display ground truth and LIO-SAM-LO trajectories and associated Mean Square Error (MSE). I've joined to the repository a record of synchronized odometry data btu you could alos use antoher one produced by the `odo-sync` package.
+```
+python3 /workspace/scripts/gem_gt_vs_lio_sam_lo.py /workspace/data/odo_sync/odo_sync_recorded.txt
+```
+
+![gt vs lio sam lo](images/gt-vs-lio-sam-lo.png)
+
+Observations:<br>
++ At the end of the `one-minute-record.bag`, the robot make a u-turn and get lost which increase the positionning error. This due to the fact inside the warehouse of the `highbay_track.world`, there are only wall and no significant content to allow to retrieve itself.
