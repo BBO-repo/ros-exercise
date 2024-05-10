@@ -157,7 +157,7 @@ ln -s /workspace/package/LIO-SAM-LO .
 cd /workspace/gem_ws
 catkin_make
 ```
-Make sure your map is available in the folder `/workspace/map` then run the run_localize launch file and your recorded rosbag. To reproduce the results I've stored a one minute record rosbag [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka). Then in two different terminal in the container just run:
+Make sure your map is available in the folder `/workspace/map` then run the run_localize launch file and your recorded rosbag. To reproduce the results I've stored a one minute record rosbag [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka). Then in two different terminals in the container just run:
 ```
 roslaunch lio_sam_lo run_localize.launch
 
@@ -166,3 +166,8 @@ rosbag play one-minute-record.bag
 You should observe the map directly loaded in RViz with the robot moving inside as illustrated below.
 
 ![lio sam lo](images/lio-sam-lo.gif)
+
+### 7. Modified LIO-SAM localization only to ground truth comparison
+The Polaris gem simulator provides the odometry ground truth in topic `/gem/base_footprint/odom` while our localize only LIO-SAM provides odometry in `/lio_sam_lo/mapping/odometry`.<br>
+To compare the LIO-SAM-LO odometry to ground truth, the odometries need to be synchronized in time. So I've written a quick package **odo**metry **sync**hronizer **odo-sync**.<br>
+This odo-sync package takes two odometry topics and performs a soft synchronization within the ROS framework, then writes a file containing synchronized odometry data. The file can then be post-processed to compare odometry result.  
