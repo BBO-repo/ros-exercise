@@ -202,7 +202,7 @@ Observations:<br>
 
 ### 8. Covariance estimation of real-time lidar localization.
 
-Let's consider localization in 2D where $[x_{gt},y_{gt}]_n$ is the ground truth localization  and $[x_{lo},y_{lo}]_n$ the odometry localization at time stamp $n$.<br>
+Let's consider localization in 2D where $[x_{gt},y_{gt}]_{n}$ is the ground truth localization  and $[x_{lo},y_{lo}]_{n}$ the odometry localization at time stamp $n$.<br>
 
 Let's note $\delta_x^n$, respectively $\delta_y^n$, the position uncertainty at time stamp $n$
 $$x_{lo}^n = x_{gt}^n + \delta_x^n$$
