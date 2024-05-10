@@ -36,10 +36,20 @@ OdoSyncNode::~OdoSyncNode()
 	ROS_INFO("Synchronized [%d] odometry messages in folder: [%s]", n_synchro_, output_folder_.c_str());
 }
 
-void OdoSyncNode::callback(const nav_msgs::OdometryConstPtr &msg_rgb, const nav_msgs::OdometryConstPtr &msg_depth)
+void OdoSyncNode::callback(const nav_msgs::OdometryConstPtr &odom_1_msg, const nav_msgs::OdometryConstPtr &odom_2_msg)
 {
+	// write the header if first line
+	if(!n_synchro_)
+	{
+		output_sync_file_ << "time,";
+		output_sync_file_ << odom1_sub_str_ << ".x," << odom1_sub_str_ << ".y," << odom1_sub_str_ << ".z,"; 
+		output_sync_file_ << odom2_sub_str_ << ".x," << odom2_sub_str_ << ".y," << odom2_sub_str_ << ".z\n"; 
+	}
+
 	++n_synchro_;
-	output_sync_file_ << "Print something:" << n_synchro_ << std::endl;
+	output_sync_file_ << odom_1_msg->header.stamp << ",";
+	output_sync_file_ << odom_1_msg->pose.pose.position.x << "," << odom_1_msg->pose.pose.position.y << "," << odom_1_msg->pose.pose.position.z << ","; 
+	output_sync_file_ << odom_2_msg->pose.pose.position.x << "," << odom_2_msg->pose.pose.position.y << "," << odom_2_msg->pose.pose.position.z << "\n"; 
 }
 
 bool OdoSyncNode::paramValidation(std::string &errmsg)

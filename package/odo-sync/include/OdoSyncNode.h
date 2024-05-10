@@ -32,7 +32,7 @@ public:
 	OdoSyncNode(const ros::NodeHandle &nh);
 	~OdoSyncNode();
 
-	void callback( const nav_msgs::OdometryConstPtr& msg_rgb , const nav_msgs::OdometryConstPtr& msg_depth );
+	void callback( const nav_msgs::OdometryConstPtr& odom_1_msg , const nav_msgs::OdometryConstPtr& odom_2_msg );
 
 private:
 	int n_synchro_;
