@@ -141,9 +141,9 @@ Note: The Polaris robot has been moved inside the warehouse.
 
 To save the map, I just called the `/lio_sam/save_map` service.
 ```
-rosservice call /lio_sam/save_map 0.2 "/workspace/map"
+rosservice call /lio_sam/save_map 0.2 "data/map"
 ```
-The produced map folder contains the following files `CornerMap.pcd`, `GlobalMap.pcd`, `SurfMap.pcd`, `trajectory.pcd`, `transformations.pcd` and is available in the [map](map) folder.
+The produced map folder contains the following files `CornerMap.pcd`, `GlobalMap.pcd`, `SurfMap.pcd`, `trajectory.pcd`, `transformations.pcd` and is available in the [map](data/map) folder.
 Several software can be used to visualize the point cloud map, I've used the [vscode-3d-preview](https://marketplace.visualstudio.com/items?itemName=tatsy.vscode-3d-preview) extension to directly see it in vscode.
 ![lio sam map](images/lio-sam-generated-map.png)
 
@@ -157,7 +157,7 @@ ln -s /workspace/package/LIO-SAM-LO .
 cd /workspace/gem_ws
 catkin_make
 ```
-Make sure your map is available in the folder `/workspace/map` then run the run_localize launch file and your recorded rosbag. To reproduce the results I've stored a one minute record rosbag [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka). Then in two different terminals in the container just run:
+Make sure your map is available in the folder `/workspace/data/map` then run the run_localize launch file and your recorded rosbag. To reproduce the results I've stored a one minute record rosbag [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka). Then in two different terminals in the container just run:
 ```
 roslaunch lio_sam_lo run_localize.launch
 
@@ -199,3 +199,17 @@ python3 /workspace/scripts/gem_gt_vs_lio_sam_lo.py /workspace/data/odo_sync/odo_
 
 Observations:<br>
 + At the end of the `one-minute-record.bag`, the robot make a u-turn and get lost which increases the positionning error. This due to the fact that inside the warehouse of the `highbay_track.world`, there are only walls and no significant content to allow to retrieve itself.
+
+### 8. Covariance estimation of real-time lidar localization.
+
+Let's consider localization in 2D where $[x_{gt},y_{gt}]_n$ is the ground truth localization  and $[x_{lo},y_{lo}]_n$ the odometry localization at time stamp $n$.<br>
+
+Let's note $\delta_x^n$, respectively $\delta_y^n$, the position uncertainty at time stamp $n$
+$$x_{lo}^n = x_{gt}^n + \delta_x^n$$
+$$y_{lo}^n = y_{gt}^n + \delta_y^n$$
+
+We want an approximative estimation of this odometry localization uncertainty [$\delta_x,\delta_y$]. Supposing that this uncertainty has a null mean value (hypothesis that may not be true in practice), the expected value are null: $E(\delta_x) = E(\delta_y) = 0$. Then the covariance of those uncertainties are:
+$$\sigma_{\delta_x}^2 = E(\delta_x - E(\delta_x))^2 = E(\delta_x^2) = E(|x_{lo} - x_{gt}|^2)$$
+$$\sigma_{\delta_y}^2 = E(\delta_y - E(\delta_y))^2 = E(\delta_y^2) = E(|y_{lo} - y_{gt}|^2)$$
+We can see from that relations that the covariance is the square of the pose error with the ground truth.</br>
+
