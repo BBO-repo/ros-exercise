@@ -211,5 +211,6 @@ $$y_{lo}^n = y_{gt}^n + \delta_y^n$$
 We want an approximative estimation of this odometry localization uncertainty [$\delta_x,\delta_y$]. Supposing that this uncertainty has a null mean value (hypothesis that may not be true in practice), the expected value are null: $E(\delta_x) = E(\delta_y) = 0$. Then the covariance of those uncertainties are:
 $$\sigma_{\delta_x}^2 = E(\delta_x - E(\delta_x))^2 = E(\delta_x^2) = E(|x_{lo} - x_{gt}|^2)$$
 $$\sigma_{\delta_y}^2 = E(\delta_y - E(\delta_y))^2 = E(\delta_y^2) = E(|y_{lo} - y_{gt}|^2)$$
-We can see from that relations that the covariance is the square of the pose error with the ground truth.</br>
+We can see from that relations that the covariance is the square of the pose error reloated to the ground truth.</br>
 
+We now need an estimator of this covariance, this can be done with the sequential/recursive/online calculation of sample covariance  
