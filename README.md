@@ -213,7 +213,8 @@ $$\sigma_{\delta_x}^2 = E(\delta_x - E(\delta_x))^2 = E(\delta_x^2) = E(|x_{lo} 
 $$\sigma_{\delta_y}^2 = E(\delta_y - E(\delta_y))^2 = E(\delta_y^2) = E(|y_{lo} - y_{gt}|^2)$$
 We can see from those relations that the covariance is the square of the pose error related to the ground truth.</br>
 
-We now need an estimator of this covariance. This can be done with the sequential calculation of covariance. Let's note $\hat{\Sigma}_n$ the sample covariance estimator with $n$ samples of a random discrete variable $X$:
+We now need an estimator of this covariance. This can be done with the sequential calculation of covariance. Let's note $\hat{\Sigma}_n$ the sample covariance estimator with $n$ samples of a random discrete variable $X$ is:
+
 $$\hat{\Sigma}_n=\frac{1}{n-1}\sum_{i=1}^{n}(X_i-\hat{\mu}_n)^2$$
 With $\hat{\mu_n}$ the sample mean estimator:
 $$\hat{\mu}_n = \frac{1}{n}\sum_{i=1}^{n}X_i$$
