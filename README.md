@@ -219,7 +219,7 @@ We want an approximative estimation of this odometry localization uncertainty $[
 ```math
 \sigma_{\delta_y}^2 = E(\delta_y - E(\delta_y))^2 = E(\delta_y^2) = E(|y_{lo} - y_{gt}|^2)
 ```
-We can see from those relations that the covariance is the square of the pose error related to the ground truth.</br>
+We can see from those relations that ***asymptotically*** the covariance is the square of the pose error related to the ground truth.</br>
 
 We now need an estimator of this covariance. This can be done with the sequential calculation of covariance. Let's note $\hat{\Sigma}_n$ the sample covariance estimator with $n$ samples of a random discrete variable $X$ is:
 
@@ -231,9 +231,12 @@ With $\hat{\mu_n}$ the sample mean estimator:
 ```math
 \hat{\mu}_n = \frac{1}{n}\sum_{i=1}^{n}X_{i}
 ```
-We have the following recursion $\hat{\Sigma}_1=0$ and
+Applying the [Bessel correction](https://mathworld.wolfram.com/BesselsCorrection.html), we have the following [recursion](https://math.stackexchange.com/questions/374881/recursive-formula-for-variance/4741037#4741037) for the sample covariance estimator $\hat{\Sigma}_1=0$ and
 ```math
-\hat{\Sigma}_n=\frac{n-1}{n-2}\hat{\Sigma}_{n-1} + \frac{1}{n}(X_n - \hat{\mu}_{n-1})^2
+\hat{\Sigma}_{n+1}=\frac{n-1}{n}\hat{\Sigma}_{n} + \frac{1}{n+1}(X_{n+1} - \hat{\mu}_{n})^2
 ```
 
-I've used this recursion to compute the covariance. Noting that ground truth and odometry need to be synchronized, I've reused my `odo-sync` package adding the recursion computation in the synchronization callback function.
+I've used this recursion to compute the covariance. Noting that ground truth and odometry need to be synchronized, I've reused my `odo-sync` package to build the `cov-est` (**cov**ariance-**est**imator) package adding the recursion computation in the synchronization callback function and then publishing the covariance estimation in the topic `/cov_est/covariance`.
+
+Note:
++ As an improvment, this covariance estimated value could be display in RViz in real-time with the [jsk_rviz_plugins](https://github.com/jsk-ros-pkg/jsk_visualization) package with the [text overlay](https://jsk-visualization.readthedocs.io/en/latest/jsk_rviz_plugins/plugins/string.html).
