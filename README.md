@@ -85,8 +85,8 @@ python3 /workspace/scripts/gem_teleop_keyboard.py
 Integrating [LIO-SAM](https://github.com/TixiaoShan/LIO-SAM) is done by cloning the LIO-SAM package in our `gem_ws/src` ROS source workspace and building the workspace.<br>
 
 N.B:
-+ The additionnal library dependencies `libgtsam-dev libgtsam-unstable-dev` are directly installed in the `Dockerfile`.
-+ ROS Noetic is not directly supported but [patch/patch_liosam](patch/patch_liosam) allows to solve the build issue as documented in [LIO-SAM/issues/206](https://github.com/TixiaoShan/LIO-SAM/issues/206#issuecomment-1095370894).
++ The additionnal library dependencies `libgtsam-dev libgtsam-unstable-dev` are directly installed in the provided [`Dockerfile`](Dockerfile).
++ ROS Noetic is not directly supported but [patch/patch_liosam](patch/patch_liosam) allows to solve the build issue, also documented in [LIO-SAM/issues/206](https://github.com/TixiaoShan/LIO-SAM/issues/206#issuecomment-1095370894).
 
 Open a terminal in your container and go to the ROS source worspace directory, in our case `gem_ws/src`. Then
 clone the `LIO-SAM` ROS package, apply the patch and build your workspace
@@ -100,7 +100,7 @@ git am /workspace/patch/patch_liosam/liosam_update.patch
 cd /workspace/gem_ws
 catkin_make
 ```
-To confirm that the LIO-SAM installation is successful, I've picked a ROS bag that does not require any adjustment in those provided and run the LIO-SAM launch file. I've used the [`walking_dataset.bag`](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq) and execute the `roslaunch lio_sam run.launch`.
+To confirm that the LIO-SAM installation is successful, I've picked a ROS bag that does not require any adjustment in those provided and run the LIO-SAM launch file. I've used the [`walking_dataset.bag`](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq) and execute the `roslaunch lio_sam run.launch` which worked correctly.
 
 ### 5. Adjust LIO-SAM computation parameter with Polaris GEM simulator
 
@@ -110,7 +110,7 @@ The LIO-SAM package uses a [config/params.yaml](https://github.com/TixiaoShan/LI
 + Extrinsics between lidar and IMU: `extrinsicTrans`,`extrinsicRot`, `extrinsicRPY`
 + Enable map saving to a corresponding folder: `savePCD`, `savePCDDirectory`
 
- To determine which topic to put, I've run the Polaris GEM simulator as described above and execute a `rostopic list`. The relevant topics are `/gem/velodyne_points` for point cloud data and `/gem/imu` for IMU data. Checking the LIO-SAM code, `odomTopic` is used to publish IMU data after optimisation and `gpsTopic` is used for GPS data. In my case I let those last two topic values as is. 
+ To determine which topic to put, I've run the Polaris GEM simulator as described above and execute a `rostopic list`. The relevant topics are `/gem/velodyne_points` for point cloud data and `/gem/imu` for IMU data. Checking the LIO-SAM code, `odomTopic` is used to publish IMU data after optimisation and `gpsTopic` is used for GPS data. In my case I let those two last topic values as is. 
 
 ![topic param](images/topic-param.png)
 
@@ -123,7 +123,7 @@ We can observe that both lidar and IMU have null rotation `rpy="0 0 0"`. This in
 
 ![topic param](images/lidar-imu-tr.png)
 
-To save the map I've just set `savePCD: true` and `savePCDDirectory: "/workspace"`.
+To save the map I've just set `savePCD: true` and `savePCDDirectory: "workspace/map"`.
 
 From three terminals in container, I can run again the gem simulator, the keyboard teleoperate script and lio-sam with the modified params.yaml
 ```
@@ -141,14 +141,19 @@ Note: The Polaris robot has been moved inside the warehouse.
 
 To save the map, I just called the `/lio_sam/save_map` service.
 ```
-rosservice call /lio_sam/save_map 0.2 "data/map"
+rosservice call /lio_sam/save_map 0.2 "workspace/map"
 ```
-The produced map folder contains the following files `CornerMap.pcd`, `GlobalMap.pcd`, `SurfMap.pcd`, `trajectory.pcd`, `transformations.pcd` and is available in the [map](data/map) folder.
+The produced map folder contains the following files `CornerMap.pcd`, `GlobalMap.pcd`, `SurfMap.pcd`, `trajectory.pcd`, `transformations.pcd`. A copy of the generated map is available in the repository in the [data/map](data/map) folder.<br>
+
+Note:
++ Reading the LIO-SAM code the map is saved in `saveMapDirectory = std::getenv("HOME") + savePCDDirectory;`. This means that in the container, map results will not be accessible directly in `workspace/map` but rather in `/root/workspace/map` you will have to move the result folder `/workspace/data/map`.
+
 Several software can be used to visualize the point cloud map, I've used the [vscode-3d-preview](https://marketplace.visualstudio.com/items?itemName=tatsy.vscode-3d-preview) extension to directly see it in vscode.
 ![lio sam map](images/lio-sam-generated-map.png)
 
 ### 6. Modify the LIO-SAM to use the generated map for localization
-The ROS package [LIO-SAM-LO](package/LIO-SAM-LO) is proposed to use an existing map generated by LIO-SAM and perform localization only.<br>
+The package [LIO-SAM-LO](package/LIO-SAM-LO) is proposed to use an existing map generated by LIO-SAM and perform localization only.<br>
+
 To use the pakage, open a terminal in your container and go to the ROS source worspace directory, in our case `gem_ws/src`. Then make a symlink to the LIO-SAM-LO package and build your workspace
 ```
 cd /workspace/gem_ws/src
@@ -169,9 +174,9 @@ You should observe the map directly loaded in RViz with the robot moving inside 
 
 ### 7. Ground truth vs LIO-SAM localization only
 The Polaris gem simulator provides the odometry ground truth in topic `/gem/base_footprint/odom` while our localize only LIO-SAM provides odometry in `/lio_sam_lo/mapping/odometry`.<br>
-To compare the LIO-SAM-LO odometry to ground truth, the odometries need to be synchronized in time. So I've written a quick package **odo**metry **sync**hronizer **odo-sync**.<br>
+To compare the LIO-SAM-LO odometry to ground truth, the odometries need to be synchronized in time. So I've written a quick package **odo**metry **sync**hronizer [**odo-sync**](package/odo-sync).<br>
 This odo-sync package performs a soft synchronization of two odometry topics, then writes a file containing synchronized odometry data. The file can then be post-processed to compare odometry results.<br>
-To integrate the pakage, open a terminal in your container and go to the ROS source worspace directory, in our case `gem_ws/src`. Then make a symlink to the odo-sync package and build your workspace
+To integrate the package, open a terminal in your container and go to the ROS source worspace directory, in our case `gem_ws/src`. Then make a symlink to the odo-sync package and build your workspace
 ```
 cd /workspace/gem_ws/src
 ln -s /workspace/package/odo-sync .
@@ -197,7 +202,7 @@ python3 /workspace/scripts/gem_gt_vs_lio_sam_lo.py /workspace/data/odo_sync/odo_
 
 ![gt vs lio sam lo](images/gt-vs-lio-sam-lo.png)
 
-Observations:<br>
+Remarks:<br>
 + At the end of the `one-minute-record.bag`, the robot make a u-turn and get lost which increases the positionning error. This due to the fact that inside the warehouse of the `highbay_track.world`, there are only walls and no significant content to allow to retrieve itself.
 
 ### 8. Covariance estimation of real-time lidar localization.
@@ -221,7 +226,7 @@ We want an approximative estimation of this odometry localization uncertainty $[
 ```
 We can see from those relations that ***asymptotically*** the covariance is the square of the pose error related to the ground truth.</br>
 
-We now need an estimator of this covariance. This can be done with the sequential calculation of covariance. Let's note $\hat{\Sigma}_n$ the sample covariance estimator with $n$ samples of a random discrete variable $X$ is:
+We now need an estimator of this covariance. This can be done with the sequential calculation of covariance. Let's note $\hat{\Sigma}_n$ the sample covariance estimator with $n$ samples of a random discrete variable $X$, the estimation can be written:
 
 ```math
 \hat{\Sigma}_n=\frac{1}{n-1}\sum_{i=1}^{n}(X_i-\hat{\mu}_n)^2
@@ -238,5 +243,10 @@ Applying the [Bessel correction](https://mathworld.wolfram.com/BesselsCorrection
 
 I've used this recursion to compute the covariance. Noting that ground truth and odometry need to be synchronized, I've reused my `odo-sync` package to build the `cov-est` (**cov**ariance-**est**imator) package adding the recursion computation in the synchronization callback function and then publishing the covariance estimation in the topic `/cov_est/covariance`.
 
+This `cov-est` package is completed but has not been thoroughly tested. The code can be browsed and its notable part is in [CovEstNode::callback](https://github.com/BBO-repo/ros-exercise/blob/8741a87d28090c298b91694f61e513aad7d33524/package/cov-est/src/CovEstNode.cpp#L43C6-L43C26) function that implements the above mentinonned recursion. Due to lack of time I unfortunately had to let it as it is.<br>
+
 Note:
-+ As an improvment, this covariance estimated value could be display in RViz in real-time with the [jsk_rviz_plugins](https://github.com/jsk-ros-pkg/jsk_visualization) package with the [text overlay](https://jsk-visualization.readthedocs.io/en/latest/jsk_rviz_plugins/plugins/string.html).
++ Covariances are published through `std_msgs::Float64` value, but the next step would have be to display in RViz in real-time the estimated covariances with the [jsk_rviz_plugins](https://github.com/jsk-ros-pkg/jsk_visualization) package using the [text overlay](https://jsk-visualization.readthedocs.io/en/latest/jsk_rviz_plugins/plugins/string.html).
+
+### 9. How to reproduce the results.
+To reproduce the results you can clone this repository and follow the steps in this video.
