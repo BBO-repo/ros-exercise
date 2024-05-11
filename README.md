@@ -1,6 +1,8 @@
 # ROS exercise
 This repository is a notebook about trying to solve a proposed exercise using __ROS Noetic__ with a __Polaris gem e2__ robot simulator in __gazebo__ and available __SLAM__ library.
 
+The steps to reproduce all the results are described in this [video]() and also mentionned in [How to reproduce](#9-how-to-reproduce-the-results)
+
 ## Exercise tasks
 1. Install the POLARIS GEM e2 simulator and apply the noetic joined [patch_gem_simulation](patch/patch_gem_simulation) update.
 2. Integrate the LIO-SAM SLAM library into the simulation and apply the joined [patch_liosam](patch/patch_liosam) to handle ROS Noetic.
@@ -205,7 +207,7 @@ python3 /workspace/scripts/gem_gt_vs_lio_sam_lo.py /workspace/data/odo_sync/odo_
 Remarks:<br>
 + At the end of the `one-minute-record.bag`, the robot make a u-turn and get lost which increases the positionning error. This due to the fact that inside the warehouse of the `highbay_track.world`, there are only walls and no significant content to allow to retrieve itself.
 
-### 8. Covariance estimation of real-time lidar localization.
+### 8. Covariance estimation of real-time lidar localization
 
 Let's consider localization in 2D where $[x_{gt},y_{gt}]$ is the ground truth localization and $[x_{lo},y_{lo}]$ the odometry localization.<br>
 
@@ -248,5 +250,5 @@ This `cov-est` package is completed but has not been thoroughly tested. The code
 Note:
 + Covariances are published through `std_msgs::Float64` value, but the next step would have be to display in RViz in real-time the estimated covariances with the [jsk_rviz_plugins](https://github.com/jsk-ros-pkg/jsk_visualization) package using the [text overlay](https://jsk-visualization.readthedocs.io/en/latest/jsk_rviz_plugins/plugins/string.html).
 
-### 9. How to reproduce the results.
+### 9. How to reproduce the results
 To reproduce the results you can clone this repository and follow the steps in this video.
