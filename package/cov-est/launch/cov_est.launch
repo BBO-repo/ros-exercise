@@ -1,0 +1,22 @@
+<launch>
+
+    <!-- Arguments: name of input and output topics -->
+    <arg name="odom1_sub_topic" default="/gem/base_footprint/odom" />
+    <arg name="odom2_sub_topic" default="/lio_sam_lo/mapping/odometry" />
+    <arg name="output_folder" default="/workspace/data/cov_est/"/>
+
+    <!-- Nodes: Rosbag player -->
+    <node pkg="rosbag" type="play" name="player" output="screen" required="true"
+          args="--clock /workspace/data/rosbag/odo-sync-one-minute-record.bag"/>
+
+    <!-- Node: Odometry Synchronizer -->
+    <!-- Parameters -->
+    <param name="odom1_sub_topic" value="$(arg odom1_sub_topic)" />
+    <param name="odom2_sub_topic" value="$(arg odom2_sub_topic)" />
+    <param name="output_folder" value="$(arg output_folder)" />
+    <node pkg="cov_est" name="cov_est_exe" type="cov_est_exe"
+          required="true" output="screen" respawn="false" />
+
+</launch>
+
+
