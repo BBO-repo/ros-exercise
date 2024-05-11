@@ -223,13 +223,14 @@ We can see from those relations that the covariance is the square of the pose er
 
 We now need an estimator of this covariance. This can be done with the sequential calculation of covariance. Let's note $\hat{\Sigma}_n$ the sample covariance estimator with $n$ samples of a random discrete variable $X$ is:
 
-$$
+```math
 \hat{\Sigma}_n=\frac{1}{n-1}\sum_{i=1}^{n}(X_i-\hat{\mu}_n)^2
-$$
+```
 
 With $\hat{\mu_n}$ the sample mean estimator:
-
-$$\hat{\mu}_n = \frac{1}{n}\sum_{i=1}^{n}X_{i}$$
+```math
+\hat{\mu}_n = \frac{1}{n}\sum_{i=1}^{n}X_{i}
+```
 We have the following recursion $\hat{\Sigma}_1=0$ and $\hat{\Sigma}_n=\frac{n-1}{n-2}\hat{\Sigma}_{n-1} + \frac{1}{n}(X_n - \hat{\mu}_{n-1}^2)$.<br>
 
 I've used this recursion to compute the covariance. Noting that ground truth and odometry need to be synchronized, I've reused my `odo-sync` package adding the recursion computation in the synchronization callback function.
