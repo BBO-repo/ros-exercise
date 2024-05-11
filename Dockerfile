@@ -9,6 +9,7 @@ RUN apt update && apt install -y \
   ros-noetic-jsk-rviz-plugins ros-noetic-ros-control \
   ros-noetic-ros-controllers ros-noetic-velodyne-simulator \
   ros-noetic-robot-localization ros-noetic-geographic-msgs \
+  python3-tk \
   && rm -rf /var/lib/apt/lists/*
 
 RUN add-apt-repository -y ppa:borglab/gtsam-release-4.0 && \
