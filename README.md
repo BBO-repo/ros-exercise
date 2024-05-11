@@ -207,11 +207,18 @@ Let's consider localization in 2D where $[x_{gt},y_{gt}]$ is the ground truth lo
 Let's note $\delta_x^n$, respectively $\delta_y^n$, the position uncertainty at time stamp $n$:
 ```math
 x_{lo}^n = x_{gt}^n + \delta_x^n
+```
+```math
 y_{lo}^n = y_{gt}^n + \delta_y^n
 ```
 We want an approximative estimation of this odometry localization uncertainty $[\delta_x,\delta_y]$. Supposing that this uncertainty has a null mean value (hypothesis that may not be true in practice), the expected values are null: $E(\delta_x) = E(\delta_y) = 0$. Then the covariance of those uncertainties are:
-$$\sigma_{\delta_x}^2 = E(\delta_x - E(\delta_x))^2 = E(\delta_x^2) = E(|x_{lo} - x_{gt}|^2)$$
-$$\sigma_{\delta_y}^2 = E(\delta_y - E(\delta_y))^2 = E(\delta_y^2) = E(|y_{lo} - y_{gt}|^2)$$
+
+```math
+\sigma_{\delta_x}^2 = E(\delta_x - E(\delta_x))^2 = E(\delta_x^2) = E(|x_{lo} - x_{gt}|^2)
+```
+```math
+\sigma_{\delta_y}^2 = E(\delta_y - E(\delta_y))^2 = E(\delta_y^2) = E(|y_{lo} - y_{gt}|^2)
+```
 We can see from those relations that the covariance is the square of the pose error related to the ground truth.</br>
 
 We now need an estimator of this covariance. This can be done with the sequential calculation of covariance. Let's note $\hat{\Sigma}_n$ the sample covariance estimator with $n$ samples of a random discrete variable $X$ is:
