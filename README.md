@@ -233,7 +233,7 @@ With $\hat{\mu_n}$ the sample mean estimator:
 ```
 We have the following recursion $\hat{\Sigma}_1=0$ and
 ```math
-\hat{\Sigma}_n=\frac{n-1}{n-2}\hat{\Sigma}_{n-1} + \frac{1}{n}(X_n - \hat{\mu}_{n-1}^2)
+\hat{\Sigma}_n=\frac{n-1}{n-2}\hat{\Sigma}_{n-1} + \frac{1}{n}(X_n - \hat{\mu}_{n-1})^2
 ```
 
 I've used this recursion to compute the covariance. Noting that ground truth and odometry need to be synchronized, I've reused my `odo-sync` package adding the recursion computation in the synchronization callback function.
