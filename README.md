@@ -25,7 +25,7 @@ The exercise mentions a deliverable with a Dockerfile and the desired Ubuntu, RO
 
 Fortunately the ***Open Source Robotics Foundation*** responsible of ROS and Gazebo provides [docker images](https://hub.docker.com/u/osrf) and the [`osrf/ros:noetic-desktop-full`](https://hub.docker.com/layers/osrf/ros/noetic-desktop-full/images/sha256-cae9db690397b203c7d000149b17f88f3896a8240bd92a005176460cc73dfe28?context=explore) totally fits the environment specifications.
 
-Then the provided [Dockerfile](Dockerfile) in this repository uses the `osrf/ros:noetic-desktop-full` as a base and is completed with additionnal steps and installation to fullfil Polaris GEM e2 and LIO-SAM requirements.
+I've written a [Dockerfile](Dockerfile) in this repository that uses the `osrf/ros:noetic-desktop-full` as a base and was completed with additionnal steps and installation to fullfil Polaris GEM e2 and LIO-SAM requirements.
 
 Since I'm using [vscode](https://code.visualstudio.com/) as an IDE, I found it convenient to use the [dev container extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) then I'm also providing a `.devcontainer.json`. With this extension building the container is a easy a clicking on green bottom left button and choose `Reopen in container`
 
