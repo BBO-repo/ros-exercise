@@ -162,8 +162,14 @@ The produced map folder contains the following files `CornerMap.pcd`, `GlobalMap
 
 Note:
 + Reading the LIO-SAM code the map is saved in `saveMapDirectory = std::getenv("HOME") + savePCDDirectory;`. This means that in the container, map results will not be accessible directly in `/workspace/data/map` but rather in `/root/workspace/data/map` you will have to move the result folder `/workspace/data/map`.
+```
+cp -r /root/workspace/map/* /workspace/data/map/
+```
++ The folder [data/map/backup_map](data/map/backup_map) provides a backup or the saved map [data/map](data/map) in case you would like to restore the initial map to reproduce results
 
-Several software can be used to visualize the point cloud map, I've used the [vscode-3d-preview](https://marketplace.visualstudio.com/items?itemName=tatsy.vscode-3d-preview) extension to directly see it in vscode.
+
+Several software can be used to visualize the point cloud map, I've used the [vscode-3d-preview](https://marketplace.visualstudio.com/items?itemName=tatsy.vscode-3d-preview) extension to directly see it in vscode. You can just double click in the file GlobalMap.pcd, this will automatically open in vscode editor your pcd map.
+
 ![lio sam map](images/lio-sam-generated-map.png)
 
 ### 6. Modify the LIO-SAM to use the generated map for localization
@@ -173,9 +179,7 @@ Using my gathered knowledge of LIO-SAM code and computation with existing piece 
 
 To use the pakage, open a terminal in your container and go to the ROS source worspace directory, in our case `gem_ws/src`. Then make a symlink to the LIO-SAM-LO package and build your workspace.
 ```
-cd /workspace/gem_ws/src
-ln -s /workspace/package/LIO-SAM-LO .
-
+ln -s /workspace/package/LIO-SAM-LO/ /workspace/gem_ws/src/
 cd /workspace/gem_ws
 catkin_make
 ```
@@ -183,8 +187,9 @@ In the container, make sure your map is available in the folder `/workspace/data
 ```
 roslaunch lio_sam_lo run_localize.launch
 
-rosbag play one-minute-record.bag
+rosbag play data/rosbag/one-minute-record.bag
 ```
+
 You should observe the whole map loaded in RViz with the robot moving inside the warehouse, as illustrated below.
 
 ![lio sam lo](images/lio-sam-lo.gif)

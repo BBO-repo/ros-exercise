@@ -28,7 +28,7 @@ def plot_ground_truth_vs_lio_sam_lo(odo_sync_file):
     # plot ground truth and LIO SAM localize trajectory
     plt.plot(x_gt, y_gt, label = "ground truth")
     plt.plot(x_lo, y_lo, label = "LIO-SAM-LO") 
-    plt.legend()
+    plt.legend(loc='upper right')
     plt.grid()
     plt.xlabel("x[m]")
     plt.ylabel("y[m]")
