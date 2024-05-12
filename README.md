@@ -257,4 +257,4 @@ Note:
 To reproduce the results you can clone this repository and follow the steps in this video. The steps described in the video consist in: 
 1. cloning the repository
 2. downloading the [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka) in the dedicated data/rosbag folder
-3. going through steps to 1. to 8.
+3. going through steps to [1.](#1-setup-the-environment) to [8.](#8-covariance-estimation-of-real-time-lidar-localization)
