@@ -271,4 +271,4 @@ To reproduce the results you can clone this repository and follow the steps in t
 2. Downloading the [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka) in the dedicated [data/rosbag](data/rosbag) folder. Optionally the [`walking_dataset.bag`](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq) could also be downloaded to test LIO-SAM install) as described in [4.](#4-integrate-lio-sam)
 3. Going through steps to [1.](#1-setup-the-environment) to [8.](#8-covariance-estimation-of-real-time-lidar-localization)
 
-<video src="https://drive.google.com/uc?id=1NmD5NcGOIZZGKw0huIju1OCS0Hc9NhNT" controls></video>
+<iframe src="https://drive.google.com/file/d/1NmD5NcGOIZZGKw0huIju1OCS0Hc9NhNT/preview" width="640" height="480" allow="autoplay"></iframe>
