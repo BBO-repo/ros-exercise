@@ -138,7 +138,7 @@ To save the map I've just set `savePCD: true` and `savePCDDirectory: "workspace/
 
 Overwrite the LIO-SAM config/params.yaml with the provided in this repository file
 ```
-cp /workspace/config/params.yaml /workspace/gem_ws//src/LIO-SAM/config/params.yaml
+cp /workspace/config/params.yaml /workspace/gem_ws/src/LIO-SAM/config/params.yaml
 ```
 From three terminals in container, I can run again the gem simulator, the keyboard teleoperate script and lio-sam with the modified params.yaml
 ```
