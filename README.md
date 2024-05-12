@@ -70,6 +70,8 @@ roslaunch gem_gazebo gem_gazebo_rviz.launch world_name:=/workspace/gem_ws/src/PO
 The gazebo simulator should be opened with the robot facing the entrance of a warehouse
 ![polaris gem gazebo](images/polaris-gem-gazebo.png)
 
+Note:
++ The first time gazebo is opening with the environment may take some time, displaying only a black screen. You may have to wait a bit before seeing the whole scene loaded.
 
 ### 3. Teleoperating the POLARIS GEM e2 robot in gazebo
 To determine how to operate the robot, I checked the `rostopic list` while the simulation is running and noticed a `/gem/cmd_vel`.<br>
