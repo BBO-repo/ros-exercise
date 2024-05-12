@@ -278,8 +278,9 @@ catkin_make
 ```
 
 ### 9. How to reproduce the results
-To reproduce the results you can clone this repository and follow the steps in this video [how-to-reproduce.mp4](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka). The steps described in the video consist in: 
+To reproduce the results you can clone this repository and follow the following steps: 
 1. Cloning the repository
 2. Downloading the [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka) in the dedicated [data/rosbag](data/rosbag) folder. Optionally the [`walking_dataset.bag`](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq) could also be downloaded to test LIO-SAM install) as described in [4.](#4-integrate-lio-sam)
 3. Going through steps [1.](#1-setup-the-environment) to [8.](#8-covariance-estimation-of-real-time-lidar-localization)
 
+I've also made a 20min video that goes through all the steps to reproduce the results [how-to-reproduce.mp4](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka).
