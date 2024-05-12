@@ -27,16 +27,17 @@ Fortunately the ***Open Source Robotics Foundation*** responsible of ROS and Gaz
 
 I've written a [Dockerfile](Dockerfile) in this repository that uses the `osrf/ros:noetic-desktop-full` as a base and was completed with additionnal steps and installation to fullfil Polaris GEM e2 and LIO-SAM requirements.
 
-Since I'm using [vscode](https://code.visualstudio.com/) as an IDE, I found it convenient to use the [dev container extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) then I'm also providing a `.devcontainer.json`. With this extension building the container is a easy a clicking on green bottom left button and choose `Reopen in container`
+The `docker` user by default does not have access to X11 server which may make GUI display failing when run from container. To make sure GUI content will correctly be displayed, make sure to run this command from **the host machine**.
+```
+xhost +local:docker
+```
+
+Since I'm using [vscode](https://code.visualstudio.com/) as an IDE, I found it convenient to use the [dev container extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) then I'm also providing a [`.devcontainer.json`](.devcontainer.json). With this extension building the container is a easy a clicking on green bottom left button and choose `Reopen in container`
 
 ![remote dev status bar](images/remote-dev-status-bar.png)
 
 Once done you should have the current folder content accessible in the container terminal under the path `/workspace`
 
-While using the container, I faced issue displaying GUI content. This is due to `docker` user by default does not have access to X11 server, to make sure GUI content can be displayed, make sure to run this command from **the host machine**.
-```
-xhost +local:docker
-```
 After that, to confirm the setting was up, I've tried to run `roscore` then `rviz` and `gazebo`. Everything were working as expected.
 
 ### 2. Install and run the POLARIS GEM e2 simulator
