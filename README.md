@@ -32,13 +32,13 @@ The `docker` user by default does not have access to X11 server which may make G
 xhost +local:docker
 ```
 
-Since I'm using [vscode](https://code.visualstudio.com/) as an IDE, I found it convenient to use the [dev container extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) then I'm also providing a [`.devcontainer.json`](.devcontainer.json). With this extension building the container is a easy a clicking on green bottom left button and choose `Reopen in container`
+Since I'm using [vscode](https://code.visualstudio.com/) as an IDE, I found it convenient to use the [dev container extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) then I'm also providing a [`.devcontainer.json`](.devcontainer.json). With `dev contain extension`, building the container is as easy as just clicking on green bottom left button and choose `Reopen in container`
 
 ![remote dev status bar](images/remote-dev-status-bar.png)
 
-Once done you should have the current folder content accessible in the container terminal under the path `/workspace`
+Once done, you should have the current folder content accessible in the container terminal under the path `/workspace`
 
-After that, to confirm the setting was up, I've tried to run `roscore` then `rviz` and `gazebo`. Everything were working as expected.
+After that, to confirm the setting is up, from a terminal in container, I've run `roscore` then `rviz` and `gazebo`. Everything were working as expected.
 
 ### 2. Install and run the POLARIS GEM e2 simulator
 Installing the [POLARIS GEM e2 simulator](https://gitlab.engr.illinois.edu/gemillins/POLARIS_GEM_e2) was straight forward following the official instruction.<br>
@@ -73,7 +73,7 @@ The gazebo simulator should be opened with the robot facing the entrance of a wa
 
 ### 3. Teleoperating the POLARIS GEM e2 robot in gazebo
 To determine how to operate the robot, I checked the `rostopic list` while the simulation is running and noticed a `/gem/cmd_vel`.<br>
-Since the `cmd_vel` is usually the topic to operate robot I've tried to publish the single twist message and could see the robot moving
+Since the `cmd_vel` is usually the topic to operate robot, I've tried to publish a single twist message and could see the robot moving
 ```
 rostopic pub -l /gem/cmd_vel geometry_msgs/Twist -r 3 -- '[0.5,0,0]' '[0,0,0]'
 ```
@@ -89,7 +89,7 @@ Integrating [LIO-SAM](https://github.com/TixiaoShan/LIO-SAM) is done by cloning 
 
 N.B:
 + The additionnal library dependencies `libgtsam-dev libgtsam-unstable-dev` are directly installed in the provided [`Dockerfile`](Dockerfile).
-+ ROS Noetic is not directly supported but [patch/patch_liosam](patch/patch_liosam) allows to solve the build issue, also documented in [LIO-SAM/issues/206](https://github.com/TixiaoShan/LIO-SAM/issues/206#issuecomment-1095370894).
++ ROS Noetic is not directly supported but [patch/patch_liosam](patch/patch_liosam) allows to solve the build issue, which is also documented in [LIO-SAM/issues/206](https://github.com/TixiaoShan/LIO-SAM/issues/206#issuecomment-1095370894).
 
 Open a terminal in your container and go to the ROS source worspace directory, in our case `gem_ws/src`. Then
 clone the `LIO-SAM` ROS package, apply the patch and build your workspace
@@ -144,20 +144,20 @@ Note: The Polaris robot has been moved inside the warehouse.
 
 To save the map, I just called the `/lio_sam/save_map` service.
 ```
-rosservice call /lio_sam/save_map 0.2 "workspace/map"
+rosservice call /lio_sam/save_map 0.2 "/workspace/data/map"
 ```
 The produced map folder contains the following files `CornerMap.pcd`, `GlobalMap.pcd`, `SurfMap.pcd`, `trajectory.pcd`, `transformations.pcd`. A copy of the generated map is available in the repository in the [data/map](data/map) folder.<br>
 
 Note:
-+ Reading the LIO-SAM code the map is saved in `saveMapDirectory = std::getenv("HOME") + savePCDDirectory;`. This means that in the container, map results will not be accessible directly in `workspace/map` but rather in `/root/workspace/map` you will have to move the result folder `/workspace/data/map`.
++ Reading the LIO-SAM code the map is saved in `saveMapDirectory = std::getenv("HOME") + savePCDDirectory;`. This means that in the container, map results will not be accessible directly in `/workspace/data/map` but rather in `/root/workspace/data/map` you will have to move the result folder `/workspace/data/map`.
 
 Several software can be used to visualize the point cloud map, I've used the [vscode-3d-preview](https://marketplace.visualstudio.com/items?itemName=tatsy.vscode-3d-preview) extension to directly see it in vscode.
 ![lio sam map](images/lio-sam-generated-map.png)
 
 ### 6. Modify the LIO-SAM to use the generated map for localization
-I've spent some time to dive into LIO-SAM computation details and have localization using LIO-SAM generated map. I also got inspired of existing code dealing with same topic [1](https://github.com/huiyan-dev/pcd-map-localization), [2](https://github.com/BALA22-cyber/Liosam_relocalization), [3](https://github.com/Gaochao-hit/LIO-SAM_based_relocalization), [4](https://github.com/BALA22-cyber/Liosam_relocalization), [5](https://github.com/shallowlife/SC-LIO-SAM_based_relocalization), [6](https://github.com/1475015695/liosam_liauto?tab=readme-ov-file).<br>
+I've spent some time to dive into LIO-SAM computation details and to have localization using LIO-SAM generated map. I've read the official LIO-SAM [paper](https://github.com/TixiaoShan/LIO-SAM/blob/master/config/doc/paper.pdf), spend (long) time reading LIO-SAM code and also got inspired of existing code dealing with same topic [[1](https://github.com/huiyan-dev/pcd-map-localization), [2](https://github.com/BALA22-cyber/Liosam_relocalization), [3](https://github.com/Gaochao-hit/LIO-SAM_based_relocalization), [4](https://github.com/BALA22-cyber/Liosam_relocalization), [5](https://github.com/shallowlife/SC-LIO-SAM_based_relocalization), [6](https://github.com/1475015695/liosam_liauto?tab=readme-ov-file)].<br>
 
-Using my gathered knowledge of LIO-SAM code and computation with existing piece of code, mix-and-matched I'm proposing the package LIO-SAM **l**ocalize **o**nly [LIO-SAM-LO](package/LIO-SAM-LO) to use an existing LIO-SAM generated map and perform localization only.<br>
+Using my gathered knowledge of LIO-SAM code and computation with existing piece of code, mix-and-matched I'm proposing the package LIO-SAM **l**ocalize **o**nly [LIO-SAM-LO](package/LIO-SAM-LO), to use an existing LIO-SAM generated map and perform localization only.<br>
 
 To use the pakage, open a terminal in your container and go to the ROS source worspace directory, in our case `gem_ws/src`. Then make a symlink to the LIO-SAM-LO package and build your workspace.
 ```
@@ -167,13 +167,13 @@ ln -s /workspace/package/LIO-SAM-LO .
 cd /workspace/gem_ws
 catkin_make
 ```
-Make sure your map is available in the folder `/workspace/data/map` then run the run_localize launch file and your recorded rosbag. To reproduce the results I've stored a one minute record rosbag [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka). Then in two different terminals in the container just run:
+In the container, make sure your map is available in the folder `/workspace/data/map` then run the run_localize launch file and your recorded rosbag. To reproduce the results I've stored a one minute record rosbag [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka). Then in two different terminals in the container just run:
 ```
 roslaunch lio_sam_lo run_localize.launch
 
 rosbag play one-minute-record.bag
 ```
-You should observe the map directly loaded in RViz with the robot moving inside as illustrated below.
+You should observe the whole map loaded in RViz with the robot moving inside the warehouse, as illustrated below.
 
 ![lio sam lo](images/lio-sam-lo.gif)
 
@@ -246,9 +246,9 @@ Applying the [Bessel correction](https://mathworld.wolfram.com/BesselsCorrection
 \hat{\Sigma}_{n+1}=\frac{n-1}{n}\hat{\Sigma}_{n} + \frac{1}{n+1}(X_{n+1} - \hat{\mu}_{n})^2
 ```
 
-I've used this recursion to compute the covariance. Noting that ground truth and odometry need to be synchronized, I've reused my `odo-sync` package to build the `cov-est` (**cov**ariance-**est**imator) package adding the recursion computation in the synchronization callback function and then publishing the covariance estimation in the topic `/cov_est/covariance`.
+I've used this recursion to compute the covariance. Noting that ground truth and odometry need to be synchronized, I've reused my `odo-sync` package to build the `cov-est` (**cov**ariance-**est**imator) package adding the recursion computation in the synchronization callback function and then publishing the covariance estimation in the topic `/cov_est/covariance_x` (resp. `/cov_est/covariance_y`) for x (resp. y) localization.
 
-This `cov-est` package is completed but has not been thoroughly tested. The code can be browsed and its notable part is in [CovEstNode::callback](https://github.com/BBO-repo/ros-exercise/blob/8741a87d28090c298b91694f61e513aad7d33524/package/cov-est/src/CovEstNode.cpp#L43C6-L43C26) function that implements the above mentinonned recursion. Due to lack of time I unfortunately had to let it as it is.<br>
+This `cov-est` package is completed but has not been thoroughly tested. The code can be browsed and its notable part is in [CovEstNode::callback](https://github.com/BBO-repo/ros-exercise/blob/8741a87d28090c298b91694f61e513aad7d33524/package/cov-est/src/CovEstNode.cpp#L43C6-L43C26) function that implements the above mentionned recursion. Due to lack of time I unfortunately had to let it as it is.<br>
 
 Note:
 + Covariances are published through `std_msgs::Float64` value, but the next step would have be to display in RViz in real-time the estimated covariances with the [jsk_rviz_plugins](https://github.com/jsk-ros-pkg/jsk_visualization) package using the [text overlay](https://jsk-visualization.readthedocs.io/en/latest/jsk_rviz_plugins/plugins/string.html).
