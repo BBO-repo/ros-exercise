@@ -136,6 +136,10 @@ We can observe that both lidar and IMU have null rotation `rpy="0 0 0"`. This in
 
 To save the map I've just set `savePCD: true` and `savePCDDirectory: "workspace/map"`.
 
+Overwrite the LIO-SAM config/params.yaml with the provided in this repository file
+```
+cp /workspace/config/params.yaml /workspace/gem_ws//src/LIO-SAM/config/params.yaml
+```
 From three terminals in container, I can run again the gem simulator, the keyboard teleoperate script and lio-sam with the modified params.yaml
 ```
 roslaunch gem_gazebo gem_gazebo_rviz.launch world_name:=/workspace/gem_ws/src/POLARIS_GEM_e2/polaris_gem_simulator/gem_simulator/gem_gazebo/worlds/highbay_track.world x:=-30.5 y:=-1.5 yaw:=0 velodyne_points:="true" use_rviz:="false"
@@ -266,3 +270,5 @@ To reproduce the results you can clone this repository and follow the steps in t
 1. Cloning the repository
 2. Downloading the [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka) in the dedicated [data/rosbag](data/rosbag) folder. Optionally the [`walking_dataset.bag`](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq) could also be downloaded to test LIO-SAM install) as described in [4.](#4-integrate-lio-sam)
 3. Going through steps to [1.](#1-setup-the-environment) to [8.](#8-covariance-estimation-of-real-time-lidar-localization)
+
+<video src="https://drive.google.com/uc?id=1NmD5NcGOIZZGKw0huIju1OCS0Hc9NhNT" controls></video>
