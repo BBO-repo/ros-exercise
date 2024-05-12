@@ -1,7 +1,7 @@
 # ROS exercise
 This repository is a notebook about trying to solve a proposed exercise using __ROS Noetic__ with a __Polaris gem e2__ robot simulator in __gazebo__ and available __SLAM__ library.
 
-The steps to reproduce all the results are described in this [video]() which is also mentionned in section [9. How to reproduce](#9-how-to-reproduce-the-results)
+The steps to reproduce all the results are described in this video [how-to-reproduce.mp4](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka) which is also mentionned in section [9. How to reproduce](#9-how-to-reproduce-the-results)
 
 ## Exercise tasks
 1. Install the POLARIS GEM e2 simulator and apply the noetic joined [patch_gem_simulation](patch/patch_gem_simulation) update.
@@ -270,8 +270,16 @@ This `cov-est` package is completed but has not been thoroughly tested. The code
 Note:
 + Covariances are published through `std_msgs::Float64` value, but the next step would have be to display in RViz in real-time the estimated covariances with the [jsk_rviz_plugins](https://github.com/jsk-ros-pkg/jsk_visualization) package using the [text overlay](https://jsk-visualization.readthedocs.io/en/latest/jsk_rviz_plugins/plugins/string.html).
 
+Even if the package is not finalized, it is still available to integrate, maybe with some little more time I would have it working as expected.
+```
+ln -s /workspace/package/cov-est /workspace/gem_ws/src/
+cd /workspace/gem_ws
+catkin_make
+```
+
 ### 9. How to reproduce the results
-To reproduce the results you can clone this repository and follow the steps in this video. The steps described in the video consist in: 
+To reproduce the results you can clone this repository and follow the steps in this video [how-to-reproduce.mp4](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka). The steps described in the video consist in: 
 1. Cloning the repository
 2. Downloading the [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka) in the dedicated [data/rosbag](data/rosbag) folder. Optionally the [`walking_dataset.bag`](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq) could also be downloaded to test LIO-SAM install) as described in [4.](#4-integrate-lio-sam)
-3. Going through steps to [1.](#1-setup-the-environment) to [8.](#8-covariance-estimation-of-real-time-lidar-localization)
+3. Going through steps [1.](#1-setup-the-environment) to [8.](#8-covariance-estimation-of-real-time-lidar-localization)
+
