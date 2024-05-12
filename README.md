@@ -106,6 +106,12 @@ cd /workspace/gem_ws
 catkin_make
 ```
 To confirm that the LIO-SAM installation is successful, I've picked a ROS bag that does not require any adjustment in those provided and run the LIO-SAM launch file. I've used the [`walking_dataset.bag`](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq) and execute the `roslaunch lio_sam run.launch` which worked correctly.
+```
+source /workspace/gem_ws/devel/setup.bash
+roslaunch lio_sam run.launch
+
+rosbag play /workspace/data/rosbag/walking_dataset.bag
+```
 
 ### 5. Adjust LIO-SAM computation parameter with Polaris GEM simulator
 
@@ -257,6 +263,6 @@ Note:
 
 ### 9. How to reproduce the results
 To reproduce the results you can clone this repository and follow the steps in this video. The steps described in the video consist in: 
-1. cloning the repository
-2. downloading the [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka) in the dedicated data/rosbag folder
-3. going through steps to [1.](#1-setup-the-environment) to [8.](#8-covariance-estimation-of-real-time-lidar-localization)
+1. Cloning the repository
+2. Downloading the [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka) in the dedicated [data/rosbag](data/rosbag) folder. Optionally the [`walking_dataset.bag`](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq) could also be downloaded to test LIO-SAM install) as described in [4.](#4-integrate-lio-sam)
+3. Going through steps to [1.](#1-setup-the-environment) to [8.](#8-covariance-estimation-of-real-time-lidar-localization)
