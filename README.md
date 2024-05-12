@@ -254,4 +254,7 @@ Note:
 + Covariances are published through `std_msgs::Float64` value, but the next step would have be to display in RViz in real-time the estimated covariances with the [jsk_rviz_plugins](https://github.com/jsk-ros-pkg/jsk_visualization) package using the [text overlay](https://jsk-visualization.readthedocs.io/en/latest/jsk_rviz_plugins/plugins/string.html).
 
 ### 9. How to reproduce the results
-To reproduce the results you can clone this repository and follow the steps in this video.
+To reproduce the results you can clone this repository and follow the steps in this video. The steps described in the video consist in: 
+1. cloning the repository
+2. downloading the [one-minute-record.bag](https://drive.google.com/drive/folders/1EkXp5G8VEJRu8eVFWPyHbI31-YVU9Hka) in the dedicated data/rosbag folder
+3. going through steps to 1. to 8.
