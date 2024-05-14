@@ -25,7 +25,7 @@ The exercise mentions a deliverable with a Dockerfile and the desired Ubuntu, RO
 
 Fortunately the ***Open Source Robotics Foundation*** responsible of ROS and Gazebo provides [docker images](https://hub.docker.com/u/osrf) and the [`osrf/ros:noetic-desktop-full`](https://hub.docker.com/layers/osrf/ros/noetic-desktop-full/images/sha256-cae9db690397b203c7d000149b17f88f3896a8240bd92a005176460cc73dfe28?context=explore) totally fits the environment specifications.
 
-I've written a [Dockerfile](Dockerfile) in this repository that uses the `osrf/ros:noetic-desktop-full` as a base and was completed with additionnal steps and installation to fullfil Polaris GEM e2 and LIO-SAM requirements.
+I've written a [Dockerfile](Dockerfile) in this repository that uses the `osrf/ros:noetic-desktop-full` as a base and completed it with additionnal steps and installation to fullfil Polaris GEM e2 and LIO-SAM requirements.
 
 The `docker` user by default does not have access to X11 server which may make GUI display failing when run from container. To make sure GUI content will correctly be displayed, make sure to run this command from **the host machine**.
 ```
