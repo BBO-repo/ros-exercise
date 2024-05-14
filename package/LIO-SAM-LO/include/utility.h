@@ -5,6 +5,7 @@
 #include <ros/ros.h>
 
 #include <std_msgs/Header.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/NavSatFix.h>

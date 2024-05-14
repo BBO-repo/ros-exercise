@@ -140,14 +140,13 @@ Overwrite the LIO-SAM config/params.yaml with the provided in this repository fi
 ```
 cp /workspace/config/params.yaml /workspace/gem_ws/src/LIO-SAM/config/params.yaml
 ```
-From three terminals in container, I can run again the gem simulator, the keyboard teleoperate script and lio-sam with the modified params.yaml
+From three terminals in container, I can run again those three sets of command to launch the gem simulator, execute the keyboard teleoperate script and run lio-sam with the modified params.yaml
 ```
 roslaunch gem_gazebo gem_gazebo_rviz.launch world_name:=/workspace/gem_ws/src/POLARIS_GEM_e2/polaris_gem_simulator/gem_simulator/gem_gazebo/worlds/highbay_track.world x:=-30.5 y:=-1.5 yaw:=0 velodyne_points:="true" use_rviz:="false"
 
 python3 /workspace/scripts/gem_teleop_keyboard.py
 
 roslaunch lio_sam run.launch
-
 ```
 
 This allows to visualize the following results<br>
@@ -173,9 +172,17 @@ Several software can be used to visualize the point cloud map, I've used the [vs
 ![lio sam map](images/lio-sam-generated-map.png)
 
 ### 6. Modify the LIO-SAM to use the generated map for localization
-I've spent some time to dive into LIO-SAM computation details and to have localization using LIO-SAM generated map. I've read the official LIO-SAM [paper](https://github.com/TixiaoShan/LIO-SAM/blob/master/config/doc/paper.pdf), spend (long) time reading LIO-SAM code and also got inspired of existing code dealing with same topic [[1](https://github.com/huiyan-dev/pcd-map-localization), [2](https://github.com/BALA22-cyber/Liosam_relocalization), [3](https://github.com/Gaochao-hit/LIO-SAM_based_relocalization), [4](https://github.com/BALA22-cyber/Liosam_relocalization), [5](https://github.com/shallowlife/SC-LIO-SAM_based_relocalization), [6](https://github.com/1475015695/liosam_liauto?tab=readme-ov-file)].<br>
+I've spent some time to dive into LIO-SAM computation details and to have localization using LIO-SAM generated map. I've read the official LIO-SAM [paper](https://github.com/TixiaoShan/LIO-SAM/blob/master/config/doc/paper.pdf), spend (long) time reading LIO-SAM code and also got inspired of existing code dealing with same topic [[1](https://github.com/huiyan-dev/pcd-map-localization), [2](https://github.com/BALA22-cyber/Liosam_relocalization), [3](https://github.com/Gaochao-hit/LIO-SAM_based_relocalization), [4](https://github.com/shallowlife/SC-LIO-SAM_based_relocalization), [5](https://github.com/1475015695/liosam_liauto?tab=readme-ov-file)].<br>
 
 Using my gathered knowledge of LIO-SAM code and computation with existing piece of code, mix-and-matched I'm proposing the package LIO-SAM **l**ocalize **o**nly [LIO-SAM-LO](package/LIO-SAM-LO), to use an existing LIO-SAM generated map and perform localization only.<br>
+
+The notable part of the additions are:
+- The introduction of the point cloud pointer `cloudGlobalMap` and its down sampled version `cloudGlobalMapDS` with its ROS publisher `pubMapWorld`
+- In the `mapOptimization` constructor, a `allocateMemory` is called to allocate data, in this `allocateMemory` function was added the `cloudGlobalLoad` function that loads the LIO-SAM saved map
+- In the `cloud_info` subscription callback, the use of the first scan to estimate the initial position of the robot in the generated map. This initial position estimate is done by ICP in the `ICPLocalizeInitialize` function.
+- The `transformInTheWorld` array is used to store the robot pose in the generated map and this pose is published by the `pubOdomToMapPose`
+- The introduction of `localizeOnlyThread` function to perform the localization of the robot during the ROS simulation. This function is called in the `main` function whereas initial LIO-SAM `loopClosureThread` and were `visualizeGlobalMapThread` removed. This `localizeOnlyThread` central function performs the ICP global scan matching calling the `ICPscanMatchGlobal` or `ICPLocalizeInitialize` if robot initial position is not available 
+<br>
 
 To use the pakage, open a terminal in your container and go to the ROS source worspace directory, in our case `gem_ws/src`. Then make a symlink to the LIO-SAM-LO package and build your workspace.
 ```
@@ -225,7 +232,7 @@ python3 /workspace/scripts/gem_gt_vs_lio_sam_lo.py /workspace/data/odo_sync/odo_
 ![gt vs lio sam lo](images/gt-vs-lio-sam-lo.png)
 
 Remarks:<br>
-+ At the end of the `one-minute-record.bag`, the robot make a u-turn and get lost which increases the positionning error. This due to the fact that inside the warehouse of the `highbay_track.world`, there are only walls and no significant content to allow to retrieve itself.
++ At the end of the `one-minute-record.bag`, the robot make a u-turn and get lost which increases the positionning error. This is due to the fact that inside the warehouse of the `highbay_track.world`, there are only walls and no significant content to allow to retrieve itself.
 
 ### 8. Covariance estimation of real-time lidar localization
 
@@ -268,7 +275,7 @@ I've used this recursion to compute the covariance. Noting that ground truth and
 This `cov-est` package is completed but has not been thoroughly tested. The code can be browsed and its notable part is in [CovEstNode::callback](https://github.com/BBO-repo/ros-exercise/blob/8741a87d28090c298b91694f61e513aad7d33524/package/cov-est/src/CovEstNode.cpp#L43C6-L43C26) function that implements the above mentionned recursion. Due to lack of time I unfortunately had to let it as it is.<br>
 
 Note:
-+ Covariances are published through `std_msgs::Float64` value, but the next step would have be to display in RViz in real-time the estimated covariances with the [jsk_rviz_plugins](https://github.com/jsk-ros-pkg/jsk_visualization) package using the [text overlay](https://jsk-visualization.readthedocs.io/en/latest/jsk_rviz_plugins/plugins/string.html).
++ Covariances are published through `std_msgs::Float64` value, but the next step would have been to display in RViz in real-time the estimated covariances with the [jsk_rviz_plugins](https://github.com/jsk-ros-pkg/jsk_visualization) package using the [text overlay](https://jsk-visualization.readthedocs.io/en/latest/jsk_rviz_plugins/plugins/string.html).
 
 Even if the package is not finalized, it is still available to integrate, maybe with some little more time I would have it working as expected.
 ```
