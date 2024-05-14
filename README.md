@@ -171,6 +171,9 @@ Several software can be used to visualize the point cloud map, I've used the [vs
 
 ![lio sam map](images/lio-sam-generated-map.png)
 
+Remarks:
+- We can see that the generated map has a drift in the z-axis as if there was a slope. This point should be further investigate.
+
 ### 6. Modify the LIO-SAM to use the generated map for localization
 I've spent some time to dive into LIO-SAM computation details and to have localization using LIO-SAM generated map. I've read the official LIO-SAM [paper](https://github.com/TixiaoShan/LIO-SAM/blob/master/config/doc/paper.pdf), spend (long) time reading LIO-SAM code and also got inspired of existing code dealing with same topic [[1](https://github.com/huiyan-dev/pcd-map-localization), [2](https://github.com/BALA22-cyber/Liosam_relocalization), [3](https://github.com/Gaochao-hit/LIO-SAM_based_relocalization), [4](https://github.com/shallowlife/SC-LIO-SAM_based_relocalization), [5](https://github.com/1475015695/liosam_liauto?tab=readme-ov-file)].<br>
 
@@ -232,7 +235,12 @@ python3 /workspace/scripts/gem_gt_vs_lio_sam_lo.py /workspace/data/odo_sync/odo_
 ![gt vs lio sam lo](images/gt-vs-lio-sam-lo.png)
 
 Remarks:<br>
++ The plot results confirm the tunnel effect with the x-axis error being greater than lateral y-axis error when the robot is moving along a corridor. For this simulation, the corridor being the two warehouse 80m along x-axis walls.
 + At the end of the `one-minute-record.bag`, the robot make a u-turn and get lost which increases the positionning error. This is due to the fact that inside the warehouse of the `highbay_track.world`, there are only walls and no significant content to allow to retrieve itself.
+
+Also, just for information, below is displayed the plot of LIO-SAM-LO with the **manually** removed x-axis error, we can observe that y-axis positionning is pretty correct for this dataset. 
+
+![gt vs lio sam lo fixed x error](images/gt-vs-lio-sam-lo-fixed-x-error.png)
 
 ### 8. Covariance estimation of real-time lidar localization
 
