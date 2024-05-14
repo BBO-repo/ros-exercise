@@ -155,7 +155,6 @@ public:
     pcl::PointCloud<PointType>::Ptr globalMapCloudDS;       // down sampled point cloud of the global map
     pcl::PointCloud<PointType>::Ptr cloudScanForInitialize; // point cloud for initialization
 
-    ros::Subscriber subIniPoseFromRviz;
     ros::Publisher pubLaserCloudInWorld;
     ros::Publisher pubGlobalMapWorld;
 
@@ -193,7 +192,6 @@ public:
         subGPS = nh.subscribe<nav_msgs::Odometry> (gpsTopic, 200, &mapOptimization::gpsHandler, this, ros::TransportHints().tcpNoDelay());
 
         //bb: addition
-        subIniPoseFromRviz = nh.subscribe("/initialpose", 8, &mapOptimization::initialpose_callback, this);
         pubGlobalMapWorld = nh.advertise<sensor_msgs::PointCloud2>("lio_sam_lo/mapping/cloud_map_map",1);
         pubLaserCloudInWorld = nh.advertise<sensor_msgs::PointCloud2>("lio_sam_lo/mapping/lasercloud_in_world", 1);
         pubOdomToMapPose = nh.advertise<geometry_msgs::PoseStamped>("lio_sam_lo/mapping/pose_odomTo_map", 1);
