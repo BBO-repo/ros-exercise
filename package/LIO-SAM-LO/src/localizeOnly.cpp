@@ -151,13 +151,13 @@ public:
 
     //bb: addition
     size_t winSize = 30;
-    pcl::PointCloud<PointType>::Ptr cloudGlobalMap;         // point cloud of the global map
-    pcl::PointCloud<PointType>::Ptr cloudGlobalMapDS;       // down sampled point cloud of the global map
+    pcl::PointCloud<PointType>::Ptr globalMapCloud;         // point cloud of the global map
+    pcl::PointCloud<PointType>::Ptr globalMapCloudDS;       // down sampled point cloud of the global map
     pcl::PointCloud<PointType>::Ptr cloudScanForInitialize; // point cloud for initialization
 
     ros::Subscriber subIniPoseFromRviz;
     ros::Publisher pubLaserCloudInWorld;
-    ros::Publisher pubMapWorld;
+    ros::Publisher pubGlobalMapWorld;
 
     float transformInTheWorld[6] = {}; // the pose in the prebuilt map
     float tranformOdomToWorld[6] = {};
@@ -194,7 +194,7 @@ public:
 
         //bb: addition
         subIniPoseFromRviz = nh.subscribe("/initialpose", 8, &mapOptimization::initialpose_callback, this);
-        pubMapWorld = nh.advertise<sensor_msgs::PointCloud2>("lio_sam_lo/mapping/cloud_map_map",1);
+        pubGlobalMapWorld = nh.advertise<sensor_msgs::PointCloud2>("lio_sam_lo/mapping/cloud_map_map",1);
         pubLaserCloudInWorld = nh.advertise<sensor_msgs::PointCloud2>("lio_sam_lo/mapping/lasercloud_in_world", 1);
         pubOdomToMapPose = nh.advertise<geometry_msgs::PoseStamped>("lio_sam_lo/mapping/pose_odomTo_map", 1);
         //bb: addition
@@ -258,11 +258,11 @@ public:
         matP.setZero();
 
         //bb: addition
-        cloudGlobalMap.reset(new pcl::PointCloud<PointType>());//bb: addition
-	    cloudGlobalMapDS.reset(new pcl::PointCloud<PointType>());//bb: addition
+        globalMapCloud.reset(new pcl::PointCloud<PointType>());//bb: addition
+	    globalMapCloudDS.reset(new pcl::PointCloud<PointType>());//bb: addition
         cloudScanForInitialize.reset(new pcl::PointCloud<PointType>());
         initializedFlag = NonInitialized;
-        cloudGlobalLoad();
+        loadGlobalMapCloud();
         //bb: addition
     }
 
@@ -284,10 +284,11 @@ public:
             if(cloudScanForInitialize->points.size() == 0)
             {
                 downsampleCurrentScan();
-                mtx_general.lock();
-                *cloudScanForInitialize += *laserCloudCornerLastDS;
-                *cloudScanForInitialize += *laserCloudSurfLastDS;
-                mtx_general.unlock();
+                {
+                    std::lock_guard<std::mutex> mLock(mtx_general);
+                    *cloudScanForInitialize += *laserCloudCornerLastDS;
+                    *cloudScanForInitialize += *laserCloudSurfLastDS;
+                }
 		        laserCloudCornerLastDS->clear();
 		        laserCloudSurfLastDS->clear();
 		        laserCloudCornerLastDSNum = 0;
@@ -961,7 +962,6 @@ public:
     }
 
 
-
     void saveKeyFramesAndFactor()
     {
         //bb: check if should generate key pose
@@ -1004,17 +1004,6 @@ public:
         thisPose6D.time = timeLaserCloudInfoLast;
         cloudKeyPoses6D->push_back(thisPose6D);
 
-        //bb: addition
-        mtxWin.lock();
-        win_cloudKeyPoses3D.push_back(thisPose3D);
-        win_cloudKeyPoses6D.push_back(thisPose6D);
-		if(win_cloudKeyPoses3D.size() > winSize)
-		{
-			win_cloudKeyPoses3D.erase(win_cloudKeyPoses3D.begin());
-			win_cloudKeyPoses6D.erase(win_cloudKeyPoses6D.begin());
-		}
-        //bb: addition
-
         // cout << "****************************************************" << endl;
         // cout << "Pose covariance:" << endl;
         // cout << isam->marginalCovariance(isamCurrentEstimate.size()-1) << endl << endl;
@@ -1040,14 +1029,23 @@ public:
         surfCloudKeyFrames.push_back(thisSurfKeyFrame);
 
         //bb: addition
-        win_cornerCloudKeyFrames.push_back(thisCornerKeyFrame);
-        win_surfCloudKeyFrames.push_back(thisSurfKeyFrame);
-        if(win_cornerCloudKeyFrames.size() > winSize)
-		{
-			win_cornerCloudKeyFrames.erase(win_cornerCloudKeyFrames.begin());
-			win_surfCloudKeyFrames.erase(win_surfCloudKeyFrames.begin());
-		}
-        mtxWin.unlock();
+        {
+            std::lock_guard<std::mutex> mLock(mtxWin);
+            win_cloudKeyPoses3D.push_back(thisPose3D);
+            win_cloudKeyPoses6D.push_back(thisPose6D);
+            if(win_cloudKeyPoses3D.size() > winSize)
+            {
+                win_cloudKeyPoses3D.erase(win_cloudKeyPoses3D.begin());
+                win_cloudKeyPoses6D.erase(win_cloudKeyPoses6D.begin());
+            }
+            win_cornerCloudKeyFrames.push_back(thisCornerKeyFrame);
+            win_surfCloudKeyFrames.push_back(thisSurfKeyFrame);
+            if(win_cornerCloudKeyFrames.size() > winSize)
+            {
+                win_cornerCloudKeyFrames.erase(win_cornerCloudKeyFrames.begin());
+                win_surfCloudKeyFrames.erase(win_surfCloudKeyFrames.begin());
+            }
+        }
         //bb: addition
 
         // save path for visualization
@@ -1111,9 +1109,11 @@ public:
             pcl::PointCloud<PointType>::Ptr cloudOutInWorld(new pcl::PointCloud<PointType>());
             PointTypePose thisPose6DInOdom = trans2PointTypePose(transformTobeMapped);
             Eigen::Affine3f T_thisPose6DInOdom = pclPointToAffine3f(thisPose6DInOdom);
-            mtxtranformOdomToWorld.lock();
-            PointTypePose pose_Odom_Map = trans2PointTypePose(tranformOdomToWorld);
-            mtxtranformOdomToWorld.unlock();
+            PointTypePose pose_Odom_Map;
+            {
+                std::lock_guard<std::mutex> mLock(mtxtranformOdomToWorld);
+                pose_Odom_Map = trans2PointTypePose(tranformOdomToWorld);
+            }
             Eigen::Affine3f T_pose_Odom_Map = pclPointToAffine3f(pose_Odom_Map);
 
             Eigen::Affine3f T_poseInMap = T_pose_Odom_Map * T_thisPose6DInOdom;
@@ -1143,17 +1143,17 @@ public:
     }
 
     //bb: addition
-    void cloudGlobalLoad()
+    void loadGlobalMapCloud()
     {
-        pcl::io::loadPCDFile("/workspace/data/map/GlobalMap.pcd", *cloudGlobalMap);
+        pcl::io::loadPCDFile("/workspace/data/map/GlobalMap.pcd", *globalMapCloud);
 
         pcl::PointCloud<PointType>::Ptr cloud_temp(new pcl::PointCloud<PointType>());
-        downSizeFilterICP.setInputCloud(cloudGlobalMap);
+        downSizeFilterICP.setInputCloud(globalMapCloud);
         downSizeFilterICP.filter(*cloud_temp);
-        *cloudGlobalMapDS = *cloud_temp;
+        *globalMapCloudDS = *cloud_temp;
 
-        std::cout << "test 0.01  the size of global cloud: " << cloudGlobalMap->points.size() << std::endl;
-        std::cout << "test 0.02  the size of global map after filter: " << cloudGlobalMapDS->points.size() << std::endl;
+        std::cout << "global map cloud size: " << globalMapCloud->points.size() << std::endl;
+        std::cout << "down sampled global map cloud size: " << globalMapCloudDS->points.size() << std::endl;
     }
 
     void localizeOnlyThread()
@@ -1163,7 +1163,7 @@ public:
             //avoid ICP using the same initial guess for many times
             if(initializedFlag == NonInitialized)
             {
-                ICPLocalizeInitialize();
+                InitialICPLocalize();
             }
             else if(initializedFlag == Initializing)
             {
@@ -1173,18 +1173,19 @@ public:
             else
             {
 		        ros::Duration(10.0).sleep();
-                ICPscanMatchGlobal();
+                GlobalICPScanMatch();
             }
         }
     }
 
-    void ICPLocalizeInitialize()
+    void InitialICPLocalize()
     {
         pcl::PointCloud<PointType>::Ptr laserCloudIn(new pcl::PointCloud<PointType>());
 
-        mtx_general.lock();
-        *laserCloudIn += *cloudScanForInitialize;
-        mtx_general.unlock();
+        {
+            std::lock_guard<std::mutex> mLock(mtx_general);
+            *laserCloudIn += *cloudScanForInitialize;
+        }
 
         if(laserCloudIn->points.size() == 0)
         {
@@ -1205,7 +1206,7 @@ public:
         icp.setRANSACIterations(0);
 
         ndt.setInputSource(laserCloudIn);
-        ndt.setInputTarget(cloudGlobalMapDS);
+        ndt.setInputTarget(globalMapCloudDS);
         pcl::PointCloud<PointType>::Ptr unused_result_0(new pcl::PointCloud<PointType>());
 
         PointTypePose thisPose6DInWorld = trans2PointTypePose(transformInTheWorld);
@@ -1215,7 +1216,7 @@ public:
 
         //use the outcome of ndt as the initial guess for ICP
         icp.setInputSource(laserCloudIn);
-        icp.setInputTarget(cloudGlobalMapDS);
+        icp.setInputTarget(globalMapCloudDS);
         pcl::PointCloud<PointType>::Ptr unused_result(new pcl::PointCloud<PointType>());
         icp.align(*unused_result, ndt.getFinalTransformation());
         std::cout << "the pose before initializing is: x" << transformInTheWorld[3] << " y" << transformInTheWorld[4]
@@ -1245,19 +1246,20 @@ public:
         float deltax, deltay, deltaz, deltaR, deltaP, deltaY;
         pcl::getTranslationAndEulerAngles (transOdomToMap, deltax, deltay, deltaz, deltaR, deltaP, deltaY);
 
-        mtxtranformOdomToWorld.lock();
-        //renew tranformOdomToWorld
-        tranformOdomToWorld[0] = deltaR;
-        tranformOdomToWorld[1] = deltaP;
-        tranformOdomToWorld[2] = deltaY;
-        tranformOdomToWorld[3] = deltax;
-        tranformOdomToWorld[4] = deltay;
-        tranformOdomToWorld[5] = deltaz;
-        mtxtranformOdomToWorld.unlock();
+        {
+            std::lock_guard<std::mutex> mLock(mtxtranformOdomToWorld);
+            //renew tranformOdomToWorld
+            tranformOdomToWorld[0] = deltaR;
+            tranformOdomToWorld[1] = deltaP;
+            tranformOdomToWorld[2] = deltaY;
+            tranformOdomToWorld[3] = deltax;
+            tranformOdomToWorld[4] = deltay;
+            tranformOdomToWorld[5] = deltaz;
+        }
         std::cout << "the pose of odom relative to Map: x" << tranformOdomToWorld[3] << " y" << tranformOdomToWorld[4]
                   << " z" << tranformOdomToWorld[5] <<std::endl;
         publishCloud(&pubLaserCloudInWorld, unused_result, timeLaserInfoStamp, "map");
-        publishCloud(&pubMapWorld, cloudGlobalMapDS, timeLaserInfoStamp, "map");
+        publishCloud(&pubGlobalMapWorld, globalMapCloudDS, timeLaserInfoStamp, "map");
 
         if (icp.hasConverged() == false || icp.getFitnessScore() > historyKeyframeFitnessScore)
         {
@@ -1284,22 +1286,23 @@ public:
         }
     }
 
-    void ICPscanMatchGlobal()
+    void GlobalICPScanMatch()
     {
 	    if (cloudKeyPoses3D->points.empty() == true)
         {
             return;
         }
 
-        mtxWin.lock();
         int latestFrameIDlocalizeOnly;
         latestFrameIDlocalizeOnly = win_cloudKeyPoses3D.size() - 1;
 
         pcl::PointCloud<PointType>::Ptr latestCloudIn(new pcl::PointCloud<PointType>());
-        *latestCloudIn += *transformPointCloud(win_cornerCloudKeyFrames[latestFrameIDlocalizeOnly], &win_cloudKeyPoses6D[latestFrameIDlocalizeOnly]);
-        *latestCloudIn += *transformPointCloud(win_surfCloudKeyFrames[latestFrameIDlocalizeOnly],   &win_cloudKeyPoses6D[latestFrameIDlocalizeOnly]);
+        {
+            std::lock_guard<std::mutex> mLock(mtxWin);
+            *latestCloudIn += *transformPointCloud(win_cornerCloudKeyFrames[latestFrameIDlocalizeOnly], &win_cloudKeyPoses6D[latestFrameIDlocalizeOnly]);
+            *latestCloudIn += *transformPointCloud(win_surfCloudKeyFrames[latestFrameIDlocalizeOnly],   &win_cloudKeyPoses6D[latestFrameIDlocalizeOnly]);
+        }
         std::cout << "the size of input cloud: " << latestCloudIn->points.size() <<std::endl;
-        mtxWin.unlock();
 
         pcl::NormalDistributionsTransform<PointType, PointType> ndt;
         ndt.setTransformationEpsilon(0.01);
@@ -1315,20 +1318,21 @@ public:
 
         // Align cloud
         // Calculate the tranform of odom relative to world
-        mtxtranformOdomToWorld.lock();
-        Eigen::Affine3f transodomToWorld_init = pcl::getTransformation(tranformOdomToWorld[3], tranformOdomToWorld[4],tranformOdomToWorld[5],tranformOdomToWorld[0],tranformOdomToWorld[1],tranformOdomToWorld[2]);
-        mtxtranformOdomToWorld.unlock();
-
+        Eigen::Affine3f transodomToWorld_init;
+        {
+            std::lock_guard<std::mutex> mLock(mtxtranformOdomToWorld);
+            transodomToWorld_init = pcl::getTransformation(tranformOdomToWorld[3], tranformOdomToWorld[4],tranformOdomToWorld[5],tranformOdomToWorld[0],tranformOdomToWorld[1],tranformOdomToWorld[2]);
+        }
         Eigen::Matrix4f matricInitGuess = transodomToWorld_init.matrix();
 
         //Firstly perform ndt in coarse resolution
         ndt.setInputSource(latestCloudIn);
-        ndt.setInputTarget(cloudGlobalMapDS);
+        ndt.setInputTarget(globalMapCloudDS);
         pcl::PointCloud<PointType>::Ptr unused_result_0(new pcl::PointCloud<PointType>());
         ndt.align(*unused_result_0, matricInitGuess);
         //use the outcome of ndt as the initial guess for ICP
         icp.setInputSource(latestCloudIn);
-        icp.setInputTarget(cloudGlobalMapDS);
+        icp.setInputTarget(globalMapCloudDS);
         pcl::PointCloud<PointType>::Ptr unused_result(new pcl::PointCloud<PointType>());
         icp.align(*unused_result, ndt.getFinalTransformation());
 
@@ -1339,19 +1343,19 @@ public:
         float x, y, z, roll, pitch, yaw;
         pcl::getTranslationAndEulerAngles (transodomToWorld_New, x, y, z, roll, pitch, yaw);
 
-        mtxtranformOdomToWorld.lock();
-        //renew tranformOdomToWorld
-        tranformOdomToWorld[0] = roll;
-        tranformOdomToWorld[1] = pitch;
-        tranformOdomToWorld[2] = yaw;
-        tranformOdomToWorld[3] = x;
-        tranformOdomToWorld[4] = y;
-        tranformOdomToWorld[5] = z;
-        mtxtranformOdomToWorld.unlock();
-        //publish the laserpointcloud in world frame
+        {
+            //renew tranformOdomToWorld
+            std::lock_guard<std::mutex> mLock(mtxtranformOdomToWorld);
+            tranformOdomToWorld[0] = roll;
+            tranformOdomToWorld[1] = pitch;
+            tranformOdomToWorld[2] = yaw;
+            tranformOdomToWorld[3] = x;
+            tranformOdomToWorld[4] = y;
+            tranformOdomToWorld[5] = z;
+        }
 
         //publish global map
-        publishCloud(&pubMapWorld, cloudGlobalMapDS, timeLaserInfoStamp, "map");//publish world map
+        publishCloud(&pubGlobalMapWorld, globalMapCloudDS, timeLaserInfoStamp, "map");
 
         if (icp.hasConverged() == true && icp.getFitnessScore() < historyKeyframeFitnessScore)
         {
@@ -1406,17 +1410,15 @@ public:
         Eigen::Affine3f T_OdomToMap = T_thisPose6DInWorld * T_thisPose6DInOdom.inverse();
         float delta_x, delta_y, delta_z, delta_roll, delta_pitch, delta_yaw;
         pcl::getTranslationAndEulerAngles (T_OdomToMap, delta_x, delta_y, delta_z, delta_roll, delta_pitch, delta_yaw);
-
-        mtxtranformOdomToWorld.lock();
-        //keep for co-operate the initializing and lio, not useful for the present
-        tranformOdomToWorld[0] = delta_roll;
-        tranformOdomToWorld[1] = delta_pitch;
-        tranformOdomToWorld[2] = delta_yaw;
-        tranformOdomToWorld[3] = delta_x;
-        tranformOdomToWorld[4] = delta_y;
-        tranformOdomToWorld[5] = delta_z;
-
-        mtxtranformOdomToWorld.unlock();
+        {
+            std::lock_guard<std::mutex> mLock(mtxtranformOdomToWorld);
+            tranformOdomToWorld[0] = delta_roll;
+            tranformOdomToWorld[1] = delta_pitch;
+            tranformOdomToWorld[2] = delta_yaw;
+            tranformOdomToWorld[3] = delta_x;
+            tranformOdomToWorld[4] = delta_y;
+            tranformOdomToWorld[5] = delta_z;
+        }
         initializedFlag = NonInitialized;
     }
     //bb: addition

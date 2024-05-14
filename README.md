@@ -177,11 +177,11 @@ I've spent some time to dive into LIO-SAM computation details and to have locali
 Using my gathered knowledge of LIO-SAM code and computation with existing piece of code, mix-and-matched I'm proposing the package LIO-SAM **l**ocalize **o**nly [LIO-SAM-LO](package/LIO-SAM-LO), to use an existing LIO-SAM generated map and perform localization only.<br>
 
 The notable part of the additions are:
-- The introduction of the point cloud pointer `cloudGlobalMap` and its down sampled version `cloudGlobalMapDS` with its ROS publisher `pubMapWorld`
-- In the `mapOptimization` constructor, a `allocateMemory` is called to allocate data, in this `allocateMemory` function was added the `cloudGlobalLoad` function that loads the LIO-SAM saved map
-- In the `cloud_info` subscription callback, the use of the first scan to estimate the initial position of the robot in the generated map. This initial position estimate is done by ICP in the `ICPLocalizeInitialize` function.
-- The `transformInTheWorld` array is used to store the robot pose in the generated map and this pose is published by the `pubOdomToMapPose`
-- The introduction of `localizeOnlyThread` function to perform the localization of the robot during the ROS simulation. This function is called in the `main` function whereas initial LIO-SAM `loopClosureThread` and were `visualizeGlobalMapThread` removed. This `localizeOnlyThread` central function performs the ICP global scan matching calling the `ICPscanMatchGlobal` or `ICPLocalizeInitialize` if robot initial position is not available 
+- The introduction of the point cloud pointer `globalMapCloud` and its down sampled version `globalMapCloudDS` to store te saved map in memory. A ROS publisher `pubGlobalMapWorld` was also added to publish it.
+- In the `mapOptimization` constructor, a `allocateMemory` is called to allocate data. In this `allocateMemory` function, the `loadGlobalMapCloud` function was added to loads the LIO-SAM saved map.
+- In the `cloud_info` subscription callback, the use of the first scan to estimate the initial position of the robot in the generated map. This initial position estimate is done by ICP in the `InitialICPLocalize` function.
+- The `transformInTheWorld` array is used to store the robot pose in the generated map and this pose is published by the `pubOdomToMapPose` publisher.
+- The introduction of `localizeOnlyThread` function to perform the localization of the robot during the ROS simulation. This function is called in the `main` function whereas initial LIO-SAM `loopClosureThread` and `visualizeGlobalMapThread` were removed. This `localizeOnlyThread` central function performs the ICP global scan matching calling the `GlobalICPScanMatch` or `InitialICPLocalize` if robot initial position is not available. 
 <br>
 
 To use the pakage, open a terminal in your container and go to the ROS source worspace directory, in our case `gem_ws/src`. Then make a symlink to the LIO-SAM-LO package and build your workspace.
