@@ -79,7 +79,7 @@ Since the `cmd_vel` is usually the topic to operate robot, I've tried to publish
 ```
 rostopic pub -l /gem/cmd_vel geometry_msgs/Twist -r 3 -- '[0.5,0,0]' '[0,0,0]'
 ```
-Then I decide to develop my own keyboard teleoperating script to allow moving the robot. The written script [scripts/gem_teleop_keyboard.py](scripts/gem_teleop_keyboard.py) takes user keyboard inputs to increase/decrease the linear/angular velocities and publish a `geometry_msgs/Twist` to `/gem/cmd_vel`.<br>
+Then I decide to build my own keyboard teleoperating script to allow moving the robot. The written script [scripts/gem_teleop_keyboard.py](scripts/gem_teleop_keyboard.py) takes user keyboard inputs to increase/decrease the linear/angular velocities and publish a `geometry_msgs/Twist` to `/gem/cmd_vel`.<br>
 To teleoperate the robot, you just need to launch the simulator launch file and from another terminal in container run the written script.
 ```
 python3 /workspace/scripts/gem_teleop_keyboard.py
@@ -105,7 +105,7 @@ git am /workspace/patch/patch_liosam/liosam_update.patch
 cd /workspace/gem_ws
 catkin_make
 ```
-To confirm that the LIO-SAM installation is successful, I've picked a ROS bag that does not require any adjustment in those provided and run the LIO-SAM launch file. I've used the [`walking_dataset.bag`](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq) and execute the `roslaunch lio_sam run.launch` which worked correctly.
+To confirm that the LIO-SAM installation is successful, I've picked a ROS bag that does not require any adjustment in those provided and run the LIO-SAM launch file. I've used the [`walking_dataset.bag`](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq) and executed the `roslaunch lio_sam run.launch` which worked correctly.
 ```
 source /workspace/gem_ws/devel/setup.bash
 roslaunch lio_sam run.launch
@@ -167,7 +167,7 @@ cp -r /root/workspace/map/* /workspace/data/map/
 + The folder [data/map/backup_map](data/map/backup_map) provides a backup or the saved map [data/map](data/map) in case you would like to restore the initial map to reproduce results
 
 
-Several software can be used to visualize the point cloud map, I've used the [vscode-3d-preview](https://marketplace.visualstudio.com/items?itemName=tatsy.vscode-3d-preview) extension to directly see it in vscode. You can just double click in the file GlobalMap.pcd, this will automatically open in vscode editor your pcd map.
+Several software can be used to visualize the point cloud map, I've used the [vscode-3d-preview](https://marketplace.visualstudio.com/items?itemName=tatsy.vscode-3d-preview) extension to directly see it in vscode. You can just double click in the file [GlobalMap.pcd](data/map/GlobalMap.pcd), this will automatically open in vscode editor your pcd map.
 
 ![lio sam map](images/lio-sam-generated-map.png)
 
@@ -180,9 +180,10 @@ I've spent some time to dive into LIO-SAM computation details and to have locali
 Using my gathered knowledge of LIO-SAM code and computation with existing piece of code, mix-and-matched I'm proposing the package LIO-SAM **l**ocalize **o**nly [LIO-SAM-LO](package/LIO-SAM-LO), to use an existing LIO-SAM generated map and perform localization only.<br>
 
 The notable part of the additions are:
+- The addition of [localizeOnly.cpp](package/LIO-SAM-LO/src/localizeOnly.cpp) source file, containing the code to perform localization using the saved LIO-SAM map. 
 - The introduction of the point cloud pointer `globalMapCloud` and its down sampled version `globalMapCloudDS` to store the saved map in memory. A ROS publisher `pubGlobalMapWorld` was also added to publish it.
-- In the `mapOptimization` constructor, a `allocateMemory` is called to allocate data. In this `allocateMemory` function, the `loadGlobalMapCloud` function was added to loads the LIO-SAM saved map.
-- In the `cloud_info` subscription callback, the use of the first scan to estimate the initial position of the robot in the generated map. This initial position estimate is done by ICP in the `InitialICPLocalize` function.
+- In the `mapOptimization` constructor, the function `allocateMemory` is called to allocate data. In this `allocateMemory` function, the `loadGlobalMapCloud` function was added to load the LIO-SAM saved map.
+- In the `cloud_info` subscription callback, the use of the first scan to estimate the initial position of the robot in the generated map has bee added. This initial position estimate is done by ICP in the `InitialICPLocalize` function.
 - The `transformInTheWorld` array is used to store the robot pose in the generated map and this pose is published by the `pubOdomToMapPose` publisher.
 - The introduction of `localizeOnlyThread` function to perform the localization of the robot during the ROS simulation. This function is called in the `main` function whereas initial LIO-SAM `loopClosureThread` and `visualizeGlobalMapThread` were removed. This `localizeOnlyThread` central function performs the ICP global scan matching calling the `GlobalICPScanMatch` function or `InitialICPLocalize` if robot initial position is not available. 
 <br>
